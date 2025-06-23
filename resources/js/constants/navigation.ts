@@ -1,5 +1,5 @@
 import { NavItem } from '@/types';
-import { BookOpen, Folder, KeyRound, LayoutGrid, Rocket, UserRoundCog, UsersRound } from 'lucide-react';
+import { CalendarSync, LayoutGrid, Settings, UsersRound } from 'lucide-react';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -9,52 +9,86 @@ export const mainNavItems: NavItem[] = [
         permission: ['dashboard.index'],
     },
     {
-        title: 'Permission',
-        href: '/permissions',
-        icon: KeyRound,
-        permission: ['permissions.index'],
-    },
-    {
-        title: 'Role',
-        href: '/roles',
-        icon: UserRoundCog,
-        permission: ['roles.index'],
-    },
-    {
-        title: 'User',
-        href: '/users',
-        icon: UsersRound,
-        permission: ['users.index'],
-    },
-    {
-        title: 'Resources',
+        title: 'Employee Management',
         href: '#',
-        icon: Rocket,
-        permission: ['users.index'],
+        icon: UsersRound,
+        permission: ['regions.index', 'branches.index', 'departments.index', 'positions.index',  'users.index'],
         items: [
             {
-                title: 'Repository',
-                href: 'https://github.com/laravel/react-starter-kit',
+                title: 'Region',
+                href: '/regions',
             },
             {
-                title: 'Documentation',
-                href: 'https://laravel.com/docs/starter-kits',
+                title: 'Branch',
+                href: '/branches',
+            },
+            {
+                title: 'Department',
+                href: '/departments',
+            },
+            {
+                title: 'Position',
+                href: '/positions',
+            },
+            {
+                title: 'Employee',
+                href: '/users',
+            },
+        ],
+    },
+    {
+        title: 'Attendance',
+        href: '/settings',
+        icon: CalendarSync,
+        permission: ['permissions.index', 'roles.index'],
+        items: [
+            {
+                title: 'Shift',
+                href: '/permissions',
+            },
+            {
+                title: 'Schedule',
+                href: '/roles',
+            },
+            {
+                title: 'Attendance',
+                href: '/users',
+            },
+        ],
+    },
+    {
+        title: 'User Settings',
+        href: '/settings',
+        icon: Settings,
+        permission: ['permissions.index', 'roles.index'],
+        items: [
+            {
+                title: 'Permission',
+                href: '/permissions',
+            },
+            {
+                title: 'Role',
+                href: '/roles',
+            },
+            {
+                title: 'User',
+                href: '/users',
             },
         ],
     },
 ];
 
 export const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits',
-        icon: BookOpen,
-    },
+    // {
+    //     title: 'Repository',
+    //     href: 'https://github.com/laravel/react-starter-kit',
+    //     icon: Folder,
+    // },
+    // {
+    //     title: 'Documentation',
+    //     href: 'https://laravel.com/docs/starter-kits',
+    //     icon: BookOpen,
+    // },
 ];
 
 export const settingsNavItems: NavItem[] = [

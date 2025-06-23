@@ -18,12 +18,6 @@ class PermissionsTableSeeder extends Seeder
         Permission::create(['name' => 'dashboard.statistics', 'guard_name' => 'web']);
         Permission::create(['name' => 'dashboard.chart', 'guard_name' => 'web']);
 
-        //permission users
-        Permission::create(['name' => 'users.index', 'guard_name' => 'web']);
-        Permission::create(['name' => 'users.create', 'guard_name' => 'web']);
-        Permission::create(['name' => 'users.edit', 'guard_name' => 'web']);
-        Permission::create(['name' => 'users.delete', 'guard_name' => 'web']);
-
         //permission roles
         Permission::create(['name' => 'roles.index', 'guard_name' => 'web']);
         Permission::create(['name' => 'roles.create', 'guard_name' => 'web']);
@@ -32,5 +26,35 @@ class PermissionsTableSeeder extends Seeder
 
         //permission permissions
         Permission::create(['name' => 'permissions.index', 'guard_name' => 'web']);
+
+        //permission users
+        Permission::create(['name' => 'users.index', 'guard_name' => 'web']);
+        Permission::create(['name' => 'users.create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'users.edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'users.delete', 'guard_name' => 'web']);
+
+        //permission regions
+        Permission::create(['name' => 'regions.index', 'guard_name' => 'web']);
+        Permission::create(['name' => 'regions.create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'regions.edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'regions.delete', 'guard_name' => 'web']);
+
+        //permission branches
+        Permission::create(['name' => 'branches.index', 'guard_name' => 'web']);
+        Permission::create(['name' => 'branches.create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'branches.edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'branches.delete', 'guard_name' => 'web']);
+
+        //permission departments
+        Permission::create(['name' => 'departments.index', 'guard_name' => 'web']);
+        Permission::create(['name' => 'departments.create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'departments.edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'departments.delete', 'guard_name' => 'web']);
+
+        //permission positions
+        Permission::create(['name' => 'positions.index', 'guard_name' => 'web']);
+        Permission::create(['name' => 'positions.create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'positions.edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'positions.delete', 'guard_name' => 'web']);
     }
 }

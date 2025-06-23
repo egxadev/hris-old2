@@ -13,8 +13,8 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Permission } from '@/types/permission';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Branch } from '@/types/branch';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     SortingState,
     VisibilityState,
@@ -27,12 +27,13 @@ import {
 } from '@tanstack/react-table';
 import { ChevronDown } from 'lucide-react';
 import * as React from 'react';
+import { toast } from 'sonner';
 import { columns } from './partials/data-table';
 
-export default function PermissionIndex() {
-    const { breadcrumbs, data, meta, filters } = usePage<{
+export default function BranchIndex() {
+    const { breadcrumbs, data, meta, filters, flash } = usePage<{
         breadcrumbs: BreadcrumbItem[];
-        data: Permission[];
+        data: Branch[];
         meta: {
             current_page: number;
             last_page: number;
@@ -46,30 +47,35 @@ export default function PermissionIndex() {
             sort_by: string;
             sort_dir: string;
         };
+        flash: {
+            success: string;
+            error: string;
+            warning: string;
+            info: string;
+        };
     }>().props;
-
     const [search, setSearch] = React.useState(filters.search);
     const [sorting, setSorting] = React.useState<SortingState>([{ id: filters.sort_by, desc: filters.sort_dir === 'desc' }]);
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
     const [rowSelection, setRowSelection] = React.useState({});
     const [isInitialRender, setIsInitialRender] = React.useState(true);
+    const [flashStatus, setFlashStatus] = React.useState(false);
 
-    // Handle server-side operations
-    const handleServerOperation = (params: { page?: number; per_page?: number; sort_by?: string; sort_dir?: string; search?: string }) => {
-        router.get(
-            route('permissions.index'),
-            {
-                ...filters,
-                ...params,
-                page: params.page || meta.current_page,
-                per_page: params.per_page || meta.per_page,
-            },
-            {
-                preserveState: true,
-                replace: true,
-            },
-        );
-    };
+    // Reset initial render flag
+    React.useEffect(() => {
+        setIsInitialRender(false);
+    }, []);
+
+    // Handle flash messages
+    React.useEffect(() => {
+        if (!flashStatus) {
+            if (flash.success) toast.success(flash.success);
+            if (flash.error) toast.error(flash.error);
+            if (flash.warning) toast.warning(flash.warning);
+            if (flash.info) toast.info(flash.info);
+            setFlashStatus(true);
+        }
+    }, [flash, flashStatus]);
 
     // Debounce search input
     React.useEffect(() => {
@@ -95,10 +101,22 @@ export default function PermissionIndex() {
         }
     }, [sorting]);
 
-    // Reset initial render flag
-    React.useEffect(() => {
-        setIsInitialRender(false);
-    }, []);
+    // Handle server-side operations
+    const handleServerOperation = (params: { page?: number; per_page?: number; sort_by?: string; sort_dir?: string; search?: string }) => {
+        router.get(
+            route('branches.index'),
+            {
+                ...filters,
+                ...params,
+                page: params.page || meta.current_page,
+                per_page: params.per_page || meta.per_page,
+            },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
+    };
 
     const table = useReactTable({
         data,
@@ -131,31 +149,42 @@ export default function PermissionIndex() {
 
             <div className="w-full px-4">
                 <div className="flex items-center py-4">
-                    <Input placeholder="Filter names..." value={search} onChange={(event) => setSearch(event.target.value)} className="max-w-sm" />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="ml-auto">
-                                Columns <ChevronDown />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            {table
-                                .getAllColumns()
-                                .filter((column) => column.getCanHide())
-                                .map((column) => {
-                                    return (
-                                        <DropdownMenuCheckboxItem
-                                            key={column.id}
-                                            className="capitalize"
-                                            checked={column.getIsVisible()}
-                                            onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                                        >
-                                            {column.id}
-                                        </DropdownMenuCheckboxItem>
-                                    );
-                                })}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Input
+                        placeholder="Filter branches..."
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                        className="mr-1 max-w-sm"
+                    />
+                    <div className="ml-auto flex flex-row gap-1">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="ml-auto">
+                                    Columns <ChevronDown />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                {table
+                                    .getAllColumns()
+                                    .filter((column) => column.getCanHide())
+                                    .map((column) => {
+                                        return (
+                                            <DropdownMenuCheckboxItem
+                                                key={column.id}
+                                                className="capitalize"
+                                                checked={column.getIsVisible()}
+                                                onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                                            >
+                                                {column.id}
+                                            </DropdownMenuCheckboxItem>
+                                        );
+                                    })}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <Link className="" href={route('branches.create')}>
+                            <Button>Add Branch</Button>
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="rounded-md border">

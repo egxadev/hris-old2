@@ -52,5 +52,9 @@ Route::get('/api/regions/{region}/branches', function (string $region) {
     return \App\Models\Branch::where('region_id', $region)->get();
 });
 
+Route::get('/api/branches/{branch}/departments', function (string $branch) {
+    return \App\Models\Department::where('branch_id', $branch)->get();
+});
+
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

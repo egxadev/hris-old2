@@ -35,7 +35,7 @@ export function BranchForm({
     regions: Region[];
 }>) {
     const { errors } = usePage().props;
-    const [open, setOpen] = React.useState(false);
+    const [openRegion, setOpenRegion] = React.useState(false);
 
     const regionOptions = regions.map((region) => ({
         label: region.name,
@@ -123,25 +123,26 @@ export function BranchForm({
                 />
 
                 <FormField
+                    control={form.control}
                     name="region_id"
                     render={({ field }) => (
                         <FormItem className="flex flex-col">
                             <FormLabel>Region</FormLabel>
-                            <Popover open={open} onOpenChange={setOpen}>
+                            <Popover open={openRegion} onOpenChange={setOpenRegion}>
                                 <PopoverTrigger asChild>
                                     <FormControl>
                                         <Button
                                             variant="outline"
                                             role="combobox"
-                                            aria-expanded={open}
-                                            className={cn('w-[200px] justify-between', !field.value && 'text-muted-foreground')}
+                                            aria-expanded={openRegion}
+                                            className={cn('w-full justify-between', !field.value && 'text-muted-foreground')}
                                         >
                                             {field.value ? regionOptions.find((region) => region.value === field.value)?.label : 'Select region'}
                                             <ChevronsUpDown className="opacity-50" />
                                         </Button>
                                     </FormControl>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-[200px] p-0">
+                                <PopoverContent className="w-full p-0">
                                     <Command>
                                         <CommandInput placeholder="Search region..." className="h-9" />
                                         <CommandList>
@@ -153,7 +154,7 @@ export function BranchForm({
                                                         key={region.value}
                                                         onSelect={() => {
                                                             form.setValue('region_id', region.value);
-                                                            setOpen(false);
+                                                            setOpenRegion(false);
                                                         }}
                                                     >
                                                         {region.label}

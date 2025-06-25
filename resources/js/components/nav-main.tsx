@@ -23,7 +23,6 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
     const { state } = useSidebar();
     const isMobile = useIsMobile();
     const cleanup = useMobileNavigation();
-    const path = page.url.split('?')[0];
 
     return (
         <SidebarGroup>
@@ -37,7 +36,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <SidebarMenuButton
-                                                isActive={items.some(({ items }) => items?.some(({ href }) => page.url.startsWith(href)))}
+                                                isActive={items.some(({ items }) => items?.some(({ href }) => page.url.startsWith(`/${href.split('/')[1]}`)))}
                                                 tooltip={{ children: item.title }}
                                             >
                                                 {item.icon && <item.icon />}
@@ -63,7 +62,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                 <Collapsible
                                     key={item.title}
                                     asChild
-                                    defaultOpen={item.items?.some(subItem => subItem.href === path)}
+                                    defaultOpen={item.items?.some(subItem => page.url.startsWith(`/${subItem.href.split('/')[1]}`))}
                                     className="group/collapsible"
                                 >
                                     <SidebarMenuItem>
@@ -78,7 +77,9 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                             <SidebarMenuSub>
                                                 {item.items?.map((subItem) => (
                                                     <SidebarMenuSubItem key={subItem.title}>
-                                                        <SidebarMenuSubButton asChild isActive={page.url.startsWith(subItem.href)}>
+                                                        <SidebarMenuSubButton 
+                                                            asChild 
+                                                            isActive={page.url.startsWith(`/${subItem.href.split('/')[1]}`)}>
                                                             <Link href={subItem.href} prefetch>
                                                                 <span>{subItem.title}</span>
                                                             </Link>

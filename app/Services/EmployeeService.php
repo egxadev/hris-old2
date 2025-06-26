@@ -59,6 +59,18 @@ class EmployeeService
     }
 
     /**
+     * Get employee by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function getEmployeeById(string $id): array
+    {
+        $employee = Employee::with('region', 'branch', 'department', 'position')->findOrFail($id);
+        return $this->successResponse($employee, 'Employee retrieved successfully.');
+    }
+
+    /**
      * Create a new employee.
      *
      * @param array $data

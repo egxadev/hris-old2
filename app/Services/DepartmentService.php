@@ -120,7 +120,7 @@ class DepartmentService
      */
     public function getDepartmentById(string $id): array
     {
-        $department = Department::findOrFail($id);
+        $department = Department::with('branch')->findOrFail($id);
         return $this->successResponse($department, 'Department retrieved successfully.');
     }
 

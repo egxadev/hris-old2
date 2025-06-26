@@ -65,7 +65,7 @@ class PositionController extends Controller
      */
     public function store(PositionRequest $request)
     {
-        $response = $this->positionService->createPosition($request->all());
+        $response = $this->positionService->createPosition($request->validated());
 
         if ($response['success']) {
             return redirect()->route('positions.index')->with('success', $response['message']);
@@ -90,12 +90,12 @@ class PositionController extends Controller
             ]
         ];
 
-        $position = Position::with('department')->findOrFail($id);
-        
+        $position = $this->positionService->getPositionById($id);
+
         return inertia('positions/edit', [
             'breadcrumbs' => $breadcrumbs,
-            'position' => $position,
             'departments' => Department::all(),
+            'position'    => $position['data'],
         ]);
     }
 
@@ -104,7 +104,7 @@ class PositionController extends Controller
      */
     public function update(PositionRequest $request, Position $position)
     {
-        $response = $this->positionService->updatePosition($position, $request->all());
+        $response = $this->positionService->updatePosition($position, $request->validated());
 
         if ($response['success']) {
             return redirect()->route('positions.index')->with('success', $response['message']);

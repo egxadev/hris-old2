@@ -59,6 +59,18 @@ class BranchService
     }
 
     /**
+     * Get branch by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function getBranchById(string $id): array
+    {
+        $branch = Branch::with('region')->findOrFail($id);
+        return $this->successResponse($branch, 'Branch retrieved successfully.');
+    }
+
+    /**
      * Create a new branch.
      *
      * @param array $data

@@ -59,6 +59,18 @@ class PositionService
     }
 
     /**
+     * Get position by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function getPositionById(string $id): array
+    {
+        $position = Position::with('department')->findOrFail($id);
+        return $this->successResponse($position, 'Position retrieved successfully.');
+    }
+
+    /**
      * Create a new position.
      *
      * @param array $data

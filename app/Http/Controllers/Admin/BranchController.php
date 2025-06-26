@@ -68,9 +68,9 @@ class BranchController extends Controller
         $response = $this->branchService->createBranch($request->validated());
 
         if ($response['success']) {
-            return redirect()->route('branches.index')->with('success', $response['message']);
+            return redirect()->route('regions.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('branches.index')->with('error', $response['message']);
+            return redirect()->route('regions.index')->with('error', $response['message']);
         }
     }
 
@@ -90,10 +90,12 @@ class BranchController extends Controller
             ]
         ];
 
+        $branch = $this->branchService->getBranchById($id);
+
         return inertia('branches/edit', [
             'breadcrumbs' => $breadcrumbs,
-            'regions' => Region::all(),
-            'branch' => Branch::findOrFail($id),
+            'regions'     => Region::all(),
+            'branch'      => $branch['data'],
         ]);
     }
 

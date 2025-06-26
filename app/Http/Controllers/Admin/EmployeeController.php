@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use App\Services\EmployeeService;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\EmployeeRequest;
 
 class EmployeeController extends Controller
 {
@@ -59,9 +61,9 @@ class EmployeeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(PositionRequest $request)
+    public function store(EmployeeRequest $request)
     {
-        $response = $this->employeeService->createEmployee($request->all());
+        $response = $this->employeeService->createEmployee($request->validated());
 
         if ($response['success']) {
             return redirect()->route('employees.index')->with('success', $response['message']);
@@ -86,11 +88,11 @@ class EmployeeController extends Controller
             ]
         ];
 
-        $employee = Employee::with('branch', 'department', 'position')->findOrFail($id);
-        
+        $employee = $this->employeeService->getEmployeeById($id);
+
         return inertia('employees/edit', [
             'breadcrumbs' => $breadcrumbs,
-            'employee' => $employee,
+            'employee'    => $employee['data'],
         ]);
     }
 
@@ -99,7 +101,7 @@ class EmployeeController extends Controller
      */
     public function update(EmployeeRequest $request, Employee $employee)
     {
-        $response = $this->employeeService->updateEmployee($employee, $request->all());
+        $response = $this->employeeService->updateEmployee($employee, $request->validated());
 
         if ($response['success']) {
             return redirect()->route('employees.index')->with('success', $response['message']);

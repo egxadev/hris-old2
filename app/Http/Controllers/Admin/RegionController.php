@@ -88,9 +88,11 @@ class RegionController extends Controller
             ]
         ];
 
+        $region = $this->regionService->getRegionById($id);
+
         return inertia('regions/edit', [
             'breadcrumbs' => $breadcrumbs,
-            'region' => Region::findOrFail($id),
+            'region'      => $region['data'],
         ]);
     }
 

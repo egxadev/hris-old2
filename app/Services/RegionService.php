@@ -59,6 +59,18 @@ class RegionService
     }
 
     /**
+     * Get region by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function getRegionById(string $id): array
+    {
+        $region = Region::with('branches')->findOrFail($id);
+        return $this->successResponse($region, 'Region retrieved successfully.');
+    }
+
+    /**
      * Create a new region.
      *
      * @param array $data

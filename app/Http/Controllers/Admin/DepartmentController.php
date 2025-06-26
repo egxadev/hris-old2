@@ -65,11 +65,11 @@ class DepartmentController extends Controller
     {
         $response = $this->departmentService->createDepartment($request->validated());
 
-        if (isset($response['redirect'])) {
-            return redirect()->route($response['redirect'])->with('success', $response['message']);
+        if ($response['success']) {
+            return redirect()->route('departments.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('departments.index')->with('error', $response['message']);
         }
-
-        return redirect()->route('departments.index')->with('success', 'Department created successfully.');
     }
 
     /**
@@ -92,7 +92,7 @@ class DepartmentController extends Controller
 
         return inertia('departments/edit', [
             'breadcrumbs' => $breadcrumbs,
-            'department' => $department['data'],
+            'department'  => $department['data'],
         ]);
     }
 
@@ -103,11 +103,11 @@ class DepartmentController extends Controller
     {
         $response = $this->departmentService->updateDepartment($department, $request->validated());
 
-        if (isset($response['redirect'])) {
-            return redirect()->route($response['redirect'])->with('success', $response['message']);
+        if ($response['success']) {
+            return redirect()->route('departments.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('departments.index')->with('error', $response['message']);
         }
-
-        return redirect()->route('departments.index')->with('success', 'Department updated successfully.');
     }
 
     /**
@@ -117,10 +117,10 @@ class DepartmentController extends Controller
     {
         $response = $this->departmentService->deleteDepartment($id);
 
-        if (isset($response['redirect'])) {
-            return redirect()->route($response['redirect'])->with('success', $response['message']);
+        if ($response['success']) {
+            return redirect()->route('departments.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('departments.index')->with('error', $response['message']);
         }
-
-        return redirect()->route('departments.index')->with('success', 'Department deleted successfully.');
     }
 }

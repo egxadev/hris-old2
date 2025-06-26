@@ -90,10 +90,12 @@ class UserController extends Controller
             ]
         ];
 
+        $user = $this->userService->getUserById($id);
+
         return inertia('users/edit', [
             'breadcrumbs' => $breadcrumbs,
             'roles' => Role::all(),
-            'user' => User::with('roles')->findOrFail($id),
+            'user' => $user['data'],
         ]);
     }
 

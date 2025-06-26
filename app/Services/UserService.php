@@ -123,6 +123,18 @@ class UserService
     }
 
     /**
+     * Get user by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function getUserById(string $id): array
+    {
+        $user = User::findOrFail($id);
+        return $this->successResponse($user, 'User retrieved successfully.');
+    }
+
+    /**
      * Delete user by ID.
      *
      * @param string $id

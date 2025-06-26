@@ -23,7 +23,7 @@ return new class extends Migration
             // Employee identification
             $table->string('employee_code')->unique();
             $table->tinyInteger('employee_type')->comment('0 = Permanent, 1 = Contract, 2 = Freelance, 3 = Internship');
-            $table->tinyInteger('employee_status')->default(0)->comment('0 = Active, 1 = Non Active');
+            $table->tinyInteger('employee_status')->default(0)->comment('1 = Active, 0 = Non Active');
             $table->date('joined_at');
             $table->date('resigned_at')->nullable();
 

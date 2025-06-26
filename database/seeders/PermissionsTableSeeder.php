@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class PermissionsTableSeeder extends Seeder
 {
@@ -56,5 +55,41 @@ class PermissionsTableSeeder extends Seeder
         Permission::create(['name' => 'positions.create', 'guard_name' => 'web']);
         Permission::create(['name' => 'positions.edit', 'guard_name' => 'web']);
         Permission::create(['name' => 'positions.delete', 'guard_name' => 'web']);
+
+        //permission employees
+        Permission::create(['name' => 'employees.index', 'guard_name' => 'web']);
+        Permission::create(['name' => 'employees.create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'employees.edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'employees.delete', 'guard_name' => 'web']);
+
+        //permission shifts
+        Permission::create(['name' => 'shifts.index', 'guard_name' => 'web']);
+        Permission::create(['name' => 'shifts.create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'shifts.edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'shifts.delete', 'guard_name' => 'web']);
+
+        //permission schedules
+        Permission::create(['name' => 'schedules.index', 'guard_name' => 'web']);
+        Permission::create(['name' => 'schedules.create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'schedules.edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'schedules.delete', 'guard_name' => 'web']);
+
+        //permission attendances
+        Permission::create(['name' => 'attendances.index', 'guard_name' => 'web']);
+        Permission::create(['name' => 'attendances.create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'attendances.edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'attendances.delete', 'guard_name' => 'web']);
+        Permission::create(['name' => 'attendances.print', 'guard_name' => 'web']);
+        Permission::create(['name' => 'attendances.request', 'guard_name' => 'web']);
+
+        //permission leaves
+        Permission::create(['name' => 'leaves.index', 'guard_name' => 'web']);
+        Permission::create(['name' => 'leaves.create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'leaves.edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'leaves.delete', 'guard_name' => 'web']);
+        Permission::create(['name' => 'leaves.approve', 'guard_name' => 'web']);
+        Permission::create(['name' => 'leaves.reject', 'guard_name' => 'web']);
+        Permission::create(['name' => 'leaves.print', 'guard_name' => 'web']);
+        Permission::create(['name' => 'leaves.request', 'guard_name' => 'web']);
     }
 }

@@ -3,10 +3,13 @@
 namespace App\Services;
 
 use App\Models\Region;
+use App\Traits\ResponseFormatter;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class RegionService
 {
+    use ResponseFormatter;
+
     private const DEFAULT_PER_PAGE = 10;
     private const DEFAULT_SORT_BY = 'name';
     private const DEFAULT_SORT_DIR = 'asc';
@@ -41,26 +44,22 @@ class RegionService
 
         $data = $query->paginate($perPage, ['*'], 'page', $page);
 
-        return [
-            'data'  => $data->items(),
-            'meta'  => [
-                'current_page'  => $data->currentPage(),
-                'last_page'     => $data->lastPage(),
-                'per_page'      => $data->perPage(),
-                'total'         => $data->total(),
-                'from'          => $data->firstItem(),
-                'to'            => $data->lastItem(),
-            ],
-            'filters' => [
-                'search' => $search,
-                'sort_by' => $sortBy,
-                'sort_dir' => $sortDir,
-            ]
-        ];
+        return $this->paginatedResponse($data->items(), [
+            'current_page'  => $data->currentPage(),
+            'last_page'     => $data->lastPage(),
+            'per_page'      => $data->perPage(),
+            'total'         => $data->total(),
+            'from'          => $data->firstItem(),
+            'to'            => $data->lastItem(),
+        ], [
+            'search'        => $search,
+            'sort_by'       => $sortBy,
+            'sort_dir'      => $sortDir,
+        ]);
     }
 
     /**
-     * Create new region.
+     * Create a new region.
      *
      * @param array $data
      * @return array
@@ -68,66 +67,48 @@ class RegionService
     public function createRegion(array $data): array
     {
         try {
-            $region = \DB::transaction(function () use ($data) {
+            $createdData = \DB::transaction(function () use ($data) {
                 $region = Region::create([
                     'name'          => $data['name'],
                     'code'          => $data['code'],
-                    'created_by'    => auth()->id(),
+                    'created_by'    => auth()->id()
                 ]);
 
                 return $region;
             });
 
-            return [
-                'success'   => true,
-                'message'   => 'Region created successfully.',
-                'region'    => $region,
-            ];
+            return $this->successResponse($createdData, 'Region created successfully.');
         } catch (\Exception $e) {
             \Log::error('Failed to create region: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to create region.',
-            ];
+            return $this->errorResponse('Failed to create region.');
         }
     }
 
     /**
-     * Update region data.
+     * Update region.
      *
      * @param Region $region
      * @param array $data
-     * @return array
+     * @return Region
      */
     public function updateRegion(Region $region, array $data): array
     {
         try {
-            $updateData = [
-                'name'          => $data['name'],
-                'code'          => $data['code'],
-                'updated_by'    => auth()->id(),
-            ];
-
-            \DB::transaction(function () use ($region, $updateData, $data) {
-                $region->update($updateData);
+            $updatedData = \DB::transaction(function () use ($region, $data) {
+                $region->update([
+                    'name'          => $data['name'],
+                    'code'          => $data['code'],
+                    'updated_by'    => auth()->id()
+                ]);
+                return $region;
             });
 
-            return [
-                'success'   => true,
-                'message'   => 'Region updated successfully.',
-                'data'      => $region->fresh(),
-            ];
+            return $this->successResponse($updatedData, 'Region updated successfully.');
         } catch (ModelNotFoundException $e) {
-            return [
-                'success'   => false,
-                'message'   => 'Region not found.',
-            ];
+            return $this->errorResponse('Region not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to update region: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to update region.',
-            ];
+            return $this->errorResponse('Failed to update region.');
         }
     }
 
@@ -142,26 +123,17 @@ class RegionService
         try {
             $region = Region::findOrFail($id);
 
-            return \DB::transaction(function () use ($region) {
+            \DB::transaction(function () use ($region) {
                 $region->update(['deleted_by' => auth()->id()]);
                 $region->delete();
-
-                return [
-                    'success'   => true,
-                    'message'   => 'Region deleted successfully.'
-                ];
             });
+
+            return $this->successResponse(null, 'Region deleted successfully.');
         } catch (ModelNotFoundException $e) {
-            return [
-                'success'   => false,
-                'message'   => 'Region not found.'
-            ];
+            return $this->errorResponse('Region not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to delete region: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to delete region.'
-            ];
+            return $this->errorResponse('Failed to delete region.');
         }
     }
 }

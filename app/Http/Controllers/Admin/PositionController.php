@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Position;
 use App\Models\Department;
-use App\Models\Region;
-use App\Models\Branch;
 use Illuminate\Http\Request;
 use App\Services\PositionService;
 use App\Http\Controllers\Controller;
@@ -58,9 +56,7 @@ class PositionController extends Controller
 
         return inertia('positions/create', [
             'breadcrumbs' => $breadcrumbs,
-            'regions' => Region::all(),
-            'branches' => [],
-            'departments' => [],
+            'departments' => Department::all(),
         ]);
     }
 
@@ -94,14 +90,12 @@ class PositionController extends Controller
             ]
         ];
 
-        $position = Position::with('department.branch.region')->findOrFail($id);
+        $position = Position::with('department')->findOrFail($id);
         
         return inertia('positions/edit', [
             'breadcrumbs' => $breadcrumbs,
-            'regions' => Region::all(),
             'position' => $position,
-            'branches' => $position->department ? Branch::where('region_id', $position->department->branch->region_id)->get() : [],
-            'departments' => $position->department ? Department::where('branch_id', $position->department->branch_id)->get() : [],
+            'departments' => Department::all(),
         ]);
     }
 

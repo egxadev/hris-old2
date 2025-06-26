@@ -15,7 +15,6 @@ class DepartmentRequest extends FormRequest
     {
         if ($this->isMethod('post')) {
             return [
-                'branch_id' => 'required|exists:branches,id',
                 'name'     => 'required',
                 'code'     => 'required|unique:departments',
             ];
@@ -25,7 +24,6 @@ class DepartmentRequest extends FormRequest
             $department = $this->route('department');
 
             return [
-                'branch_id' => 'required|exists:branches,id',
                 'name'     => 'required',
                 'code'     => 'required|unique:departments,code,' . $department->id,
             ];

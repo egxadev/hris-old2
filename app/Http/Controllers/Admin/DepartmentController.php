@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Branch;
-use App\Models\Region;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use App\Services\DepartmentService;
@@ -57,8 +55,6 @@ class DepartmentController extends Controller
 
         return inertia('departments/create', [
             'breadcrumbs' => $breadcrumbs,
-            'regions' => Region::all(),
-            'branches' => Branch::all(),
         ]);
     }
 
@@ -77,26 +73,6 @@ class DepartmentController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $breadcrumbs = [
-            [
-                'title' => 'Department',
-                'href' => route('departments.index')
-            ],
-        ];
-
-        $data = $this->departmentService->getDepartmentById($id);
-
-        return inertia('departments/show', array_merge(
-            ['breadcrumbs' => $breadcrumbs],
-            $data
-        ));
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)
@@ -106,15 +82,18 @@ class DepartmentController extends Controller
                 'title' => 'Department',
                 'href' => route('departments.index')
             ],
+            [
+                'title' => 'Edit',
+                'href' => route('departments.edit', $id)
+            ]
         ];
-        
-        $data = $this->departmentService->getDepartmentById($id);
 
-        return inertia('departments/edit', array_merge(
-            ['breadcrumbs' => $breadcrumbs],
-            ['regions' => Region::all()],
-            $data
-        ));
+        $department = $this->departmentService->getDepartmentById($id);
+
+        return inertia('departments/edit', [
+            'breadcrumbs' => $breadcrumbs,
+            'department' => $department['data'],
+        ]);
     }
 
     /**

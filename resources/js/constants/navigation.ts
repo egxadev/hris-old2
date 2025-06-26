@@ -12,7 +12,7 @@ export const mainNavItems: NavItem[] = [
         title: 'Employee Management',
         href: '#',
         icon: UsersRound,
-        permission: ['regions.index', 'branches.index', 'departments.index', 'positions.index',  'users.index'],
+        permission: ['regions.index', 'branches.index', 'departments.index', 'positions.index',  'employees.index'],
         items: [
             {
                 title: 'Region',
@@ -32,7 +32,7 @@ export const mainNavItems: NavItem[] = [
             },
             {
                 title: 'Employee',
-                href: '/users',
+                href: '/employees',
             },
         ],
     },
@@ -40,19 +40,19 @@ export const mainNavItems: NavItem[] = [
         title: 'Attendance',
         href: '/settings',
         icon: CalendarSync,
-        permission: ['permissions.index', 'roles.index'],
+        permission: ['shifts.index', 'schedules.index', 'attendances.index'],
         items: [
             {
                 title: 'Shift',
-                href: '/permissions',
+                href: '/shifts',
             },
             {
                 title: 'Schedule',
-                href: '/roles',
+                href: '/schedules',
             },
             {
                 title: 'Attendance',
-                href: '/users',
+                href: '/attendances',
             },
         ],
     },

@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('departments', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('branch_id');
             $table->string('name');
             $table->string('code')->unique();
 
@@ -24,9 +23,6 @@ return new class extends Migration
             $table->uuid('updated_by')->nullable();
             $table->timestamp('deleted_at')->nullable();
             $table->uuid('deleted_by')->nullable();
-
-            // Foreign key
-            $table->foreign('branch_id')->references('id')->on('branches')->onUpdate('cascade')->onDelete('restrict');
         });
     }
 

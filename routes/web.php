@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\RegionController;
+use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\PositionController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DepartmentController;
@@ -46,6 +47,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // positions
     Route::resource('/positions', PositionController::class)
         ->middleware('permission:positions.index|positions.create|positions.edit|positions.delete');
+
+    // employees
+    Route::resource('/employees', EmployeeController::class)
+        ->middleware('permission:employees.index|employees.create|employees.edit|employees.delete');
 });
 
 Route::get('/api/regions/{region}/branches', function (string $region) {

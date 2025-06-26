@@ -40,6 +40,16 @@ class Employee extends Model
         'deleted_by',
     ];
 
+    protected $casts = [
+        'joined_at' => 'date',
+        'resigned_at' => 'date',
+        'birth_date' => 'date',
+        'employee_type' => 'integer',
+        'employee_status' => 'integer',
+        'gender' => 'integer',
+        'religion' => 'integer',
+    ];
+
     public static function booted()
     {
         static::creating(function ($model) {
@@ -55,5 +65,45 @@ class Employee extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the region associated with the employee.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function region()
+    {
+        return $this->belongsTo(Region::class);
+    }
+
+    /**
+     * Get the branch associated with the employee.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
+    /**
+     * Get the department associated with the employee.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    /**
+     * Get the position associated with the employee.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function position()
+    {
+        return $this->belongsTo(Position::class);
     }
 }

@@ -90,9 +90,11 @@ class RoleController extends Controller
             ]
         ];
 
+        $role = $this->roleService->getRoleById($id);
+
         return inertia('roles/edit', [
             'breadcrumbs' => $breadcrumbs,
-            'role'          => Role::with('permissions')->findOrFail($id),
+            'role'          => $role['data'],
             'permissions'   => Permission::all(),
         ]);
     }

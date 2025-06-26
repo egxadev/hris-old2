@@ -3,14 +3,17 @@
 namespace App\Services;
 
 use App\Models\Branch;
+use App\Traits\ResponseFormatter;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class BranchService
 {
+    use ResponseFormatter;
+
     private const DEFAULT_PER_PAGE = 10;
     private const DEFAULT_SORT_BY = 'name';
     private const DEFAULT_SORT_DIR = 'asc';
-    private const FILTERABLE_COLUMNS = ['region_id', 'name', 'code', 'address', 'created_at'];
+    private const FILTERABLE_COLUMNS = ['name', 'code', 'created_at'];
 
     /**
      * Get paginated branches with filters.
@@ -41,26 +44,22 @@ class BranchService
 
         $data = $query->paginate($perPage, ['*'], 'page', $page);
 
-        return [
-            'data'  => $data->items(),
-            'meta'  => [
-                'current_page'  => $data->currentPage(),
-                'last_page'     => $data->lastPage(),
-                'per_page'      => $data->perPage(),
-                'total'         => $data->total(),
-                'from'          => $data->firstItem(),
-                'to'            => $data->lastItem(),
-            ],
-            'filters' => [
-                'search' => $search,
-                'sort_by' => $sortBy,
-                'sort_dir' => $sortDir,
-            ]
-        ];
+        return $this->paginatedResponse($data->items(), [
+            'current_page'  => $data->currentPage(),
+            'last_page'     => $data->lastPage(),
+            'per_page'      => $data->perPage(),
+            'total'         => $data->total(),
+            'from'          => $data->firstItem(),
+            'to'            => $data->lastItem(),
+        ], [
+            'search'        => $search,
+            'sort_by'       => $sortBy,
+            'sort_dir'      => $sortDir,
+        ]);
     }
 
     /**
-     * Create new branch.
+     * Create a new branch.
      *
      * @param array $data
      * @return array
@@ -68,68 +67,52 @@ class BranchService
     public function createBranch(array $data): array
     {
         try {
-            $branch = \DB::transaction(function () use ($data) {
+            $createdData = \DB::transaction(function () use ($data) {
                 $branch = Branch::create([
                     'region_id'     => $data['region_id'],
                     'name'          => $data['name'],
                     'code'          => $data['code'],
                     'address'       => $data['address'],
-                    'created_by'    => auth()->id(),
+                    'created_by'    => auth()->id()
                 ]);
 
                 return $branch;
             });
 
-            return [
-                'success'   => true,
-                'message'   => 'Branch created successfully.',
-                'branch'    => $branch,
-            ];
+            return $this->successResponse($createdData, 'Branch created successfully.');
         } catch (\Exception $e) {
             \Log::error('Failed to create branch: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to create branch.',
-            ];
+            return $this->errorResponse('Failed to create branch.');
         }
     }
 
     /**
-     * Update branch data.
+     * Update branch.
      *
      * @param Branch $branch
      * @param array $data
-     * @return array
+     * @return Branch
      */
     public function updateBranch(Branch $branch, array $data): array
     {
         try {
-            \DB::transaction(function () use ($branch, $data) {
+            $updatedData = \DB::transaction(function () use ($branch, $data) {
                 $branch->update([
                     'region_id'     => $data['region_id'],
                     'name'          => $data['name'],
                     'code'          => $data['code'],
                     'address'       => $data['address'],
-                    'updated_by'    => auth()->id(),
+                    'updated_by'    => auth()->id()
                 ]);
+                return $branch;
             });
 
-            return [
-                'success'   => true,
-                'message'   => 'Branch updated successfully.',
-                'data'      => $branch->fresh(),
-            ];
+            return $this->successResponse($updatedData, 'Branch updated successfully.');
         } catch (ModelNotFoundException $e) {
-            return [
-                'success'   => false,
-                'message'   => 'Branch not found.',
-            ];
+            return $this->errorResponse('Branch not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to update branch: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to update branch.',
-            ];
+            return $this->errorResponse('Failed to update branch.');
         }
     }
 
@@ -144,26 +127,17 @@ class BranchService
         try {
             $branch = Branch::findOrFail($id);
 
-            return \DB::transaction(function () use ($branch) {
+            \DB::transaction(function () use ($branch) {
                 $branch->update(['deleted_by' => auth()->id()]);
                 $branch->delete();
-
-                return [
-                    'success'   => true,
-                    'message'   => 'Branch deleted successfully.'
-                ];
             });
+
+            return $this->successResponse(null, 'Branch deleted successfully.');
         } catch (ModelNotFoundException $e) {
-            return [
-                'success'   => false,
-                'message'   => 'Branch not found.'
-            ];
+            return $this->errorResponse('Branch not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to delete branch: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to delete branch.'
-            ];
+            return $this->errorResponse('Failed to delete branch.');
         }
     }
 }

@@ -3,10 +3,13 @@
 namespace App\Services;
 
 use App\Models\Position;
+use App\Traits\ResponseFormatter;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PositionService
 {
+    use ResponseFormatter;
+
     private const DEFAULT_PER_PAGE = 10;
     private const DEFAULT_SORT_BY = 'name';
     private const DEFAULT_SORT_DIR = 'asc';
@@ -41,26 +44,22 @@ class PositionService
 
         $data = $query->paginate($perPage, ['*'], 'page', $page);
 
-        return [
-            'data'  => $data->items(),
-            'meta'  => [
-                'current_page'  => $data->currentPage(),
-                'last_page'     => $data->lastPage(),
-                'per_page'      => $data->perPage(),
-                'total'         => $data->total(),
-                'from'          => $data->firstItem(),
-                'to'            => $data->lastItem(),
-            ],
-            'filters' => [
-                'search' => $search,
-                'sort_by' => $sortBy,
-                'sort_dir' => $sortDir,
-            ]
-        ];
+        return $this->paginatedResponse($data->items(), [
+            'current_page'  => $data->currentPage(),
+            'last_page'     => $data->lastPage(),
+            'per_page'      => $data->perPage(),
+            'total'         => $data->total(),
+            'from'          => $data->firstItem(),
+            'to'            => $data->lastItem(),
+        ], [
+            'search'        => $search,
+            'sort_by'       => $sortBy,
+            'sort_dir'      => $sortDir,
+        ]);
     }
 
     /**
-     * Create new position.
+     * Create a new position.
      *
      * @param array $data
      * @return array
@@ -68,68 +67,50 @@ class PositionService
     public function createPosition(array $data): array
     {
         try {
-            $position = \DB::transaction(function () use ($data) {
+            $createdData = \DB::transaction(function () use ($data) {
                 $position = Position::create([
                     'department_id' => $data['department_id'],
                     'name'          => $data['name'],
                     'code'          => $data['code'],
-                    'created_by'    => auth()->id(),
+                    'created_by'    => auth()->id()
                 ]);
 
                 return $position;
             });
 
-            return [
-                'success'   => true,
-                'message'   => 'Position created successfully.',
-                'position'    => $position,
-            ];
+            return $this->successResponse($createdData, 'Position created successfully.');
         } catch (\Exception $e) {
             \Log::error('Failed to create position: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to create position.',
-            ];
+            return $this->errorResponse('Failed to create position.');
         }
     }
 
     /**
-     * Update position data.
+     * Update position.
      *
      * @param Position $position
      * @param array $data
-     * @return array
+     * @return Position
      */
     public function updatePosition(Position $position, array $data): array
     {
         try {
-            $updateData = [
-                'department_id' => $data['department_id'],
-                'name'          => $data['name'],
-                'code'          => $data['code'],
-                'updated_by'    => auth()->id(),
-            ];
-
-            \DB::transaction(function () use ($position, $updateData, $data) {
-                $position->update($updateData);
+            $updatedData = \DB::transaction(function () use ($position, $data) {
+                $position->update([
+                    'department_id' => $data['department_id'],
+                    'name'          => $data['name'],
+                    'code'          => $data['code'],
+                    'updated_by'    => auth()->id()
+                ]);
+                return $position;
             });
 
-            return [
-                'success'   => true,
-                'message'   => 'Position updated successfully.',
-                'data'      => $position->fresh(),
-            ];
+            return $this->successResponse($updatedData, 'Position updated successfully.');
         } catch (ModelNotFoundException $e) {
-            return [
-                'success'   => false,
-                'message'   => 'Position not found.',
-            ];
+            return $this->errorResponse('Position not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to update position: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to update position.',
-            ];
+            return $this->errorResponse('Failed to update position.');
         }
     }
 
@@ -144,26 +125,17 @@ class PositionService
         try {
             $position = Position::findOrFail($id);
 
-            return \DB::transaction(function () use ($position) {
+            \DB::transaction(function () use ($position) {
                 $position->update(['deleted_by' => auth()->id()]);
                 $position->delete();
-
-                return [
-                    'success'   => true,
-                    'message'   => 'Position deleted successfully.'
-                ];
             });
+
+            return $this->successResponse(null, 'Position deleted successfully.');
         } catch (ModelNotFoundException $e) {
-            return [
-                'success'   => false,
-                'message'   => 'Position not found.'
-            ];
+            return $this->errorResponse('Position not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to delete position: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to delete position.'
-            ];
+            return $this->errorResponse('Failed to delete position.');
         }
     }
 }

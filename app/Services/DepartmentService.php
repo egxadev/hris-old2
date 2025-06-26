@@ -3,11 +3,13 @@
 namespace App\Services;
 
 use App\Models\Department;
-use App\Models\Branch;
+use App\Traits\ResponseFormatter;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class DepartmentService
 {
+    use ResponseFormatter;
+
     private const DEFAULT_PER_PAGE = 10;
     private const DEFAULT_SORT_BY = 'name';
     private const DEFAULT_SORT_DIR = 'asc';
@@ -42,57 +44,22 @@ class DepartmentService
 
         $data = $query->paginate($perPage, ['*'], 'page', $page);
 
-        return [
-            'data'  => $data->items(),
-            'meta'  => [
-                'current_page'  => $data->currentPage(),
-                'last_page'     => $data->lastPage(),
-                'per_page'      => $data->perPage(),
-                'total'         => $data->total(),
-                'from'          => $data->firstItem(),
-                'to'            => $data->lastItem(),
-            ],
-            'filters' => [
-                'search' => $search,
-                'sort_by' => $sortBy,
-                'sort_dir' => $sortDir,
-            ]
-        ];
+        return $this->paginatedResponse($data->items(), [
+            'current_page'  => $data->currentPage(),
+            'last_page'     => $data->lastPage(),
+            'per_page'      => $data->perPage(),
+            'total'         => $data->total(),
+            'from'          => $data->firstItem(),
+            'to'            => $data->lastItem(),
+        ], [
+            'search'        => $search,
+            'sort_by'       => $sortBy,
+            'sort_dir'      => $sortDir,
+        ]);
     }
 
     /**
-     * Get department by ID with branch relationship.
-     *
-     * @param string $id
-     * @return array
-     */
-    public function getDepartmentById(string $id): array
-    {
-        try {
-            $department = Department::with('branch.region')->findOrFail($id);
-            
-            return [
-                'department' => $department,
-                'branches' => Branch::all(),
-            ];
-        } catch (ModelNotFoundException $e) {
-            return [
-                'success' => false,
-                'message' => 'Department not found.',
-                'redirect' => 'departments.index',
-            ];
-        } catch (\Exception $e) {
-            \Log::error('Failed to retrieve department: ' . $e->getMessage());
-            return [
-                'success' => false,
-                'message' => 'Failed to retrieve department.',
-                'redirect' => 'departments.index',
-            ];
-        }
-    }
-
-    /**
-     * Create new department.
+     * Create a new department.
      *
      * @param array $data
      * @return array
@@ -100,67 +67,61 @@ class DepartmentService
     public function createDepartment(array $data): array
     {
         try {
-            $department = \DB::transaction(function () use ($data) {
+            $createdData = \DB::transaction(function () use ($data) {
                 $department = Department::create([
-                    'branch_id'     => $data['branch_id'],
                     'name'          => $data['name'],
                     'code'          => $data['code'],
-                    'created_by'    => auth()->id(),
+                    'created_by'    => auth()->id()
                 ]);
 
                 return $department;
             });
 
-            return [
-                'success'   => true,
-                'message'   => 'Department created successfully.',
-                'department'    => $department,
-            ];
+            return $this->successResponse($createdData, 'Department created successfully.');
         } catch (\Exception $e) {
             \Log::error('Failed to create department: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to create department.',
-            ];
+            return $this->errorResponse('Failed to create department.');
         }
     }
 
     /**
-     * Update department data.
+     * Update department.
      *
      * @param Department $department
      * @param array $data
-     * @return array
+     * @return Department
      */
     public function updateDepartment(Department $department, array $data): array
     {
         try {
-            \DB::transaction(function () use ($department, $data) {
+            $updatedData = \DB::transaction(function () use ($department, $data) {
                 $department->update([
-                    'branch_id'     => $data['branch_id'],
                     'name'          => $data['name'],
                     'code'          => $data['code'],
-                    'updated_by'    => auth()->id(),
+                    'updated_by'    => auth()->id()
                 ]);
+                return $department;
             });
 
-            return [
-                'success'   => true,
-                'message'   => 'Department updated successfully.',
-                'data'      => $department->fresh(),
-            ];
+            return $this->successResponse($updatedData, 'Department updated successfully.');
         } catch (ModelNotFoundException $e) {
-            return [
-                'success'   => false,
-                'message'   => 'Department not found.',
-            ];
+            return $this->errorResponse('Department not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to update department: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to update department.',
-            ];
+            return $this->errorResponse('Failed to update department.');
         }
+    }
+
+    /**
+     * Get department by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function getDepartmentById(string $id): array
+    {
+        $department = Department::findOrFail($id);
+        return $this->successResponse($department, 'Department retrieved successfully.');
     }
 
     /**
@@ -174,26 +135,17 @@ class DepartmentService
         try {
             $department = Department::findOrFail($id);
 
-            return \DB::transaction(function () use ($department) {
+            \DB::transaction(function () use ($department) {
                 $department->update(['deleted_by' => auth()->id()]);
                 $department->delete();
-
-                return [
-                    'success'   => true,
-                    'message'   => 'Department deleted successfully.'
-                ];
             });
+
+            return $this->successResponse(null, 'Department deleted successfully.');
         } catch (ModelNotFoundException $e) {
-            return [
-                'success'   => false,
-                'message'   => 'Department not found.'
-            ];
+            return $this->errorResponse('Department not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to delete department: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to delete department.'
-            ];
+            return $this->errorResponse('Failed to delete department.');
         }
     }
 }

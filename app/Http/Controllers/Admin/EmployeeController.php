@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Branch;
+use App\Models\Region;
 use App\Models\Employee;
+use App\Models\Position;
+use App\Models\Department;
 use Illuminate\Http\Request;
-use App\Services\EmployeeService;
+use App\Services\Admin\EmployeeService;
+use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\EmployeeRequest;
 
@@ -25,13 +30,13 @@ class EmployeeController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Employee',
-                'href' => route('employees.index')
+                'href' => route('admin.employees.index')
             ]
         ];
 
         $data = $this->employeeService->getPaginatedEmployees($request->all());
 
-        return inertia('employees/index', array_merge(
+        return inertia('admin/employees/index', array_merge(
             ['breadcrumbs' => $breadcrumbs],
             $data
         ));
@@ -45,16 +50,27 @@ class EmployeeController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Employee',
-                'href' => route('employees.index')
+                'href' => route('admin.employees.index')
             ],
             [
                 'title' => 'Create',
-                'href' => route('employees.create')
+                'href' => route('admin.employees.create')
             ]
         ];
 
-        return inertia('employees/create', [
+        $regions = Region::all();
+        $branches = Branch::all();
+        $departments = Department::all();
+        $positions = Position::all();
+        $roles = Role::all();
+
+        return inertia('admin/employees/create', [
             'breadcrumbs' => $breadcrumbs,
+            'regions' => $regions,
+            'branches' => $branches,
+            'departments' => $departments,
+            'positions' => $positions,
+            'roles' => $roles,
         ]);
     }
 
@@ -63,12 +79,12 @@ class EmployeeController extends Controller
      */
     public function store(EmployeeRequest $request)
     {
-        $response = $this->employeeService->createEmployee($request->validated());
+        $response = $this->employeeService->createEmployeeWithUser($request->validated());
 
         if ($response['success']) {
-            return redirect()->route('employees.index')->with('success', $response['message']);
+            return redirect()->route('admin.employees.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('employees.index')->with('error', $response['message']);
+            return redirect()->route('admin.employees.index')->with('error', $response['message']);
         }
     }
 
@@ -80,19 +96,29 @@ class EmployeeController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Employee',
-                'href' => route('employees.index')
+                'href' => route('admin.employees.index')
             ],
             [
                 'title' => 'Edit',
-                'href' => route('employees.edit', $id)
+                'href' => route('admin.employees.edit', $id)
             ]
         ];
 
-        $employee = $this->employeeService->getEmployeeById($id);
+        $employee = $this->employeeService->getEmployeeWithUserById($id);
+        $regions = Region::all();
+        $branches = Branch::all();
+        $departments = Department::all();
+        $positions = Position::all();
+        $roles = Role::all();
 
-        return inertia('employees/edit', [
+        return inertia('admin/employees/edit', [
             'breadcrumbs' => $breadcrumbs,
             'employee'    => $employee['data'],
+            'regions' => $regions,
+            'branches' => $branches,
+            'departments' => $departments,
+            'positions' => $positions,
+            'roles' => $roles,
         ]);
     }
 
@@ -101,12 +127,12 @@ class EmployeeController extends Controller
      */
     public function update(EmployeeRequest $request, Employee $employee)
     {
-        $response = $this->employeeService->updateEmployee($employee, $request->validated());
+        $response = $this->employeeService->updateEmployeeWithUser($employee, $request->validated());
 
         if ($response['success']) {
-            return redirect()->route('employees.index')->with('success', $response['message']);
+            return redirect()->route('admin.employees.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('employees.index')->with('error', $response['message']);
+            return redirect()->route('admin.employees.index')->with('error', $response['message']);
         }
     }
 
@@ -118,9 +144,9 @@ class EmployeeController extends Controller
         $response = $this->employeeService->deleteEmployee($id);
 
         if ($response['success']) {
-            return redirect()->route('employees.index')->with('success', $response['message']);
+            return redirect()->route('admin.employees.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('employees.index')->with('error', $response['message']);
+            return redirect()->route('admin.employees.index')->with('error', $response['message']);
         }
     }
 }

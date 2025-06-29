@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Position;
 use App\Models\Department;
 use Illuminate\Http\Request;
-use App\Services\PositionService;
+use App\Services\Admin\PositionService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\PositionRequest;
 
@@ -26,13 +26,13 @@ class PositionController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Position',
-                'href' => route('positions.index')
+                'href' => route('admin.positions.index')
             ]
         ];
 
         $data = $this->positionService->getPaginatedPositions($request->all());
 
-        return inertia('positions/index', array_merge(
+        return inertia('admin/positions/index', array_merge(
             ['breadcrumbs' => $breadcrumbs],
             $data
         ));
@@ -46,15 +46,15 @@ class PositionController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Position',
-                'href' => route('positions.index')
+                'href' => route('admin.positions.index')
             ],
             [
                 'title' => 'Create',
-                'href' => route('positions.create')
+                'href' => route('admin.positions.create')
             ]
         ];
 
-        return inertia('positions/create', [
+        return inertia('admin/positions/create', [
             'breadcrumbs' => $breadcrumbs,
             'departments' => Department::all(),
         ]);
@@ -68,9 +68,9 @@ class PositionController extends Controller
         $response = $this->positionService->createPosition($request->validated());
 
         if ($response['success']) {
-            return redirect()->route('positions.index')->with('success', $response['message']);
+            return redirect()->route('admin.positions.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('positions.index')->with('error', $response['message']);
+            return redirect()->route('admin.positions.index')->with('error', $response['message']);
         }
     }
 
@@ -82,17 +82,17 @@ class PositionController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Position',
-                'href' => route('positions.index')
+                'href' => route('admin.positions.index')
             ],
             [
                 'title' => 'Edit',
-                'href' => route('positions.edit', $id)
+                'href' => route('admin.positions.edit', $id)
             ]
         ];
 
         $position = $this->positionService->getPositionById($id);
 
-        return inertia('positions/edit', [
+        return inertia('admin/positions/edit', [
             'breadcrumbs' => $breadcrumbs,
             'departments' => Department::all(),
             'position'    => $position['data'],
@@ -107,9 +107,9 @@ class PositionController extends Controller
         $response = $this->positionService->updatePosition($position, $request->validated());
 
         if ($response['success']) {
-            return redirect()->route('positions.index')->with('success', $response['message']);
+            return redirect()->route('admin.positions.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('positions.index')->with('error', $response['message']);
+            return redirect()->route('admin.positions.index')->with('error', $response['message']);
         }
     }
 
@@ -121,9 +121,9 @@ class PositionController extends Controller
         $response = $this->positionService->deletePosition($id);
 
         if ($response['success']) {
-            return redirect()->route('positions.index')->with('success', $response['message']);
+            return redirect()->route('admin.positions.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('positions.index')->with('error', $response['message']);
+            return redirect()->route('admin.positions.index')->with('error', $response['message']);
         }
     }
 }

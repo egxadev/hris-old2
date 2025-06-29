@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Department;
 use Illuminate\Http\Request;
-use App\Services\DepartmentService;
+use App\Services\Admin\DepartmentService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\DepartmentRequest;
 
@@ -25,13 +25,13 @@ class DepartmentController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Department',
-                'href' => route('departments.index')
+                'href' => route('admin.departments.index')
             ]
         ];
 
         $data = $this->departmentService->getPaginatedDepartments($request->all());
 
-        return inertia('departments/index', array_merge(
+        return inertia('admin/departments/index', array_merge(
             ['breadcrumbs' => $breadcrumbs],
             $data
         ));
@@ -45,15 +45,15 @@ class DepartmentController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Department',
-                'href' => route('departments.index')
+                'href' => route('admin.departments.index')
             ],
             [
                 'title' => 'Create',
-                'href' => route('departments.create')
+                'href' => route('admin.departments.create')
             ]
         ];
 
-        return inertia('departments/create', [
+        return inertia('admin/departments/create', [
             'breadcrumbs' => $breadcrumbs,
         ]);
     }
@@ -66,9 +66,9 @@ class DepartmentController extends Controller
         $response = $this->departmentService->createDepartment($request->validated());
 
         if ($response['success']) {
-            return redirect()->route('departments.index')->with('success', $response['message']);
+            return redirect()->route('admin.departments.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('departments.index')->with('error', $response['message']);
+            return redirect()->route('admin.departments.index')->with('error', $response['message']);
         }
     }
 
@@ -80,17 +80,17 @@ class DepartmentController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Department',
-                'href' => route('departments.index')
+                'href' => route('admin.departments.index')
             ],
             [
                 'title' => 'Edit',
-                'href' => route('departments.edit', $id)
+                'href' => route('admin.departments.edit', $id)
             ]
         ];
 
         $department = $this->departmentService->getDepartmentById($id);
 
-        return inertia('departments/edit', [
+        return inertia('admin/departments/edit', [
             'breadcrumbs' => $breadcrumbs,
             'department'  => $department['data'],
         ]);
@@ -104,9 +104,9 @@ class DepartmentController extends Controller
         $response = $this->departmentService->updateDepartment($department, $request->validated());
 
         if ($response['success']) {
-            return redirect()->route('departments.index')->with('success', $response['message']);
+            return redirect()->route('admin.departments.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('departments.index')->with('error', $response['message']);
+            return redirect()->route('admin.departments.index')->with('error', $response['message']);
         }
     }
 
@@ -118,9 +118,9 @@ class DepartmentController extends Controller
         $response = $this->departmentService->deleteDepartment($id);
 
         if ($response['success']) {
-            return redirect()->route('departments.index')->with('success', $response['message']);
+            return redirect()->route('admin.departments.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('departments.index')->with('error', $response['message']);
+            return redirect()->route('admin.departments.index')->with('error', $response['message']);
         }
     }
 }

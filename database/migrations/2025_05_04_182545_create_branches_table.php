@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('code')->unique();
             $table->string('address');
+            $table->decimal('latitude', 10, 7)->nullable()->comment('Branch location latitude for attendance geofencing');
+            $table->decimal('longitude', 10, 7)->nullable()->comment('Branch location longitude for attendance geofencing');
+            $table->integer('geofence_radius')->default(100)->comment('Radius in meters for geofence boundary');
 
             // Timestamps and user tracking
             $table->timestamp('created_at')->nullable();

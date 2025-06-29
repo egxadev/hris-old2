@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('employees', function (Blueprint $table) {
             // Primary and foreign keys
             $table->uuid('id')->primary();
-            $table->uuid('region_id')->index();
-            $table->uuid('branch_id')->index();
-            $table->uuid('department_id')->index();
-            $table->uuid('position_id')->index();
-
+            $table->uuid('user_id');
+            $table->uuid('region_id');
+            $table->uuid('branch_id');
+            $table->uuid('department_id');
+            $table->uuid('position_id');
 
             // Employee identification
             $table->string('employee_code')->unique();
@@ -50,6 +50,7 @@ return new class extends Migration
             $table->uuid('deleted_by')->nullable();
 
             // Foreign keys
+            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('restrict');
             $table->foreign('region_id')->references('id')->on('regions')->onUpdate('cascade')->onDelete('restrict');
             $table->foreign('branch_id')->references('id')->on('branches')->onUpdate('cascade')->onDelete('restrict');
             $table->foreign('department_id')->references('id')->on('departments')->onUpdate('cascade')->onDelete('restrict');

@@ -14,6 +14,7 @@ class Employee extends Model
     public $incrementing = false;
 
     protected $fillable = [
+        'user_id',
         'region_id',
         'branch_id',
         'department_id',

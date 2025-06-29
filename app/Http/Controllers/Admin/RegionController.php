@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Region;
 use Illuminate\Http\Request;
-use App\Services\RegionService;
+use App\Services\Admin\RegionService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\RegionRequest;
 
@@ -25,13 +25,13 @@ class RegionController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Region',
-                'href' => route('regions.index')
+                'href' => route('admin.regions.index')
             ]
         ];
 
         $data = $this->regionService->getPaginatedRegions($request->all());
 
-        return inertia('regions/index', array_merge(
+        return inertia('admin/regions/index', array_merge(
             ['breadcrumbs' => $breadcrumbs],
             $data
         ));
@@ -45,15 +45,15 @@ class RegionController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Region',
-                'href' => route('regions.index')
+                'href' => route('admin.regions.index')
             ],
             [
                 'title' => 'Create',
-                'href' => route('regions.create')
+                'href' => route('admin.regions.create')
             ]
         ];
 
-        return inertia('regions/create', [
+        return inertia('admin/regions/create', [
             'breadcrumbs' => $breadcrumbs,
         ]);
     }
@@ -66,9 +66,9 @@ class RegionController extends Controller
         $response = $this->regionService->createRegion($request->validated());
 
         if ($response['success']) {
-            return redirect()->route('regions.index')->with('success', $response['message']);
+            return redirect()->route('admin.regions.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('regions.index')->with('error', $response['message']);
+            return redirect()->route('admin.regions.index')->with('error', $response['message']);
         }
     }
 
@@ -80,17 +80,17 @@ class RegionController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Region',
-                'href' => route('regions.index')
+                'href' => route('admin.regions.index')
             ],
             [
                 'title' => 'Edit',
-                'href' => route('regions.edit', $id)
+                'href' => route('admin.regions.edit', $id)
             ]
         ];
 
         $region = $this->regionService->getRegionById($id);
 
-        return inertia('regions/edit', [
+        return inertia('admin/regions/edit', [
             'breadcrumbs' => $breadcrumbs,
             'region'      => $region['data'],
         ]);
@@ -104,9 +104,9 @@ class RegionController extends Controller
         $response = $this->regionService->updateRegion($region, $request->validated());
 
         if ($response['success']) {
-            return redirect()->route('regions.index')->with('success', $response['message']);
+            return redirect()->route('admin.regions.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('regions.index')->with('error', $response['message']);
+            return redirect()->route('admin.regions.index')->with('error', $response['message']);
         }
     }
 
@@ -118,9 +118,9 @@ class RegionController extends Controller
         $response = $this->regionService->deleteRegion($id);
 
         if ($response['success']) {
-            return redirect()->route('regions.index')->with('success', $response['message']);
+            return redirect()->route('admin.regions.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('regions.index')->with('error', $response['message']);
+            return redirect()->route('admin.regions.index')->with('error', $response['message']);
         }
     }
 }

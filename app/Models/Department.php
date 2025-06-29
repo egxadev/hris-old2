@@ -14,6 +14,7 @@ class Department extends Model
     public $incrementing = false;
 
     protected $fillable = [
+        'branch_id',
         'name',
         'code',
         'created_by',
@@ -26,6 +27,11 @@ class Department extends Model
         static::creating(function ($model) {
             $model->id = Uuid::uuid4();
         });
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function positions()

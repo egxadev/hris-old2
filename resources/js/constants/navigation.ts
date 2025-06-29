@@ -1,5 +1,5 @@
 import { NavItem } from '@/types';
-import { CalendarSync, LayoutGrid, Settings, UsersRound } from 'lucide-react';
+import { CalendarCheck, CalendarSync, LayoutGrid, Settings, UsersRound } from 'lucide-react';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -9,50 +9,70 @@ export const mainNavItems: NavItem[] = [
         permission: ['dashboard.index'],
     },
     {
+        title: 'Attendance',
+        href: '#',
+        icon: CalendarCheck,
+        permission: ['user.attendances.checkin', 'user.attendances.checkout', 'user.attendances.history'],
+        items: [
+            {
+                title: 'Check In',
+                href: '/user/attendances/checkin',
+            },
+            {
+                title: 'Check Out',
+                href: '/user/attendances/checkout',
+            },
+            {
+                title: 'History',
+                href: '/user/attendances/history',
+            },
+        ],
+    },
+    {
         title: 'Employee Management',
         href: '#',
         icon: UsersRound,
-        permission: ['regions.index', 'branches.index', 'departments.index', 'positions.index',  'employees.index'],
+        permission: ['admin.regions.index', 'admin.branches.index', 'admin.departments.index', 'admin.positions.index', 'admin.employees.index'],
         items: [
             {
                 title: 'Region',
-                href: '/regions',
+                href: '/admin/regions',
             },
             {
                 title: 'Branch',
-                href: '/branches',
+                href: '/admin/branches',
             },
             {
                 title: 'Department',
-                href: '/departments',
+                href: '/admin/departments',
             },
             {
                 title: 'Position',
-                href: '/positions',
+                href: '/admin/positions',
             },
             {
                 title: 'Employee',
-                href: '/employees',
+                href: '/admin/employees',
             },
         ],
     },
     {
         title: 'Attendance',
-        href: '/settings',
+        href: '#',
         icon: CalendarSync,
-        permission: ['shifts.index', 'schedules.index', 'attendances.index'],
+        permission: ['admin.shifts.index', 'admin.schedules.index', 'admin.attendances.index'],
         items: [
             {
                 title: 'Shift',
-                href: '/shifts',
+                href: '/admin/shifts',
             },
             {
                 title: 'Schedule',
-                href: '/schedules',
+                href: '/admin/schedules',
             },
             {
                 title: 'Attendance',
-                href: '/attendances',
+                href: '/admin/attendances',
             },
         ],
     },
@@ -69,10 +89,6 @@ export const mainNavItems: NavItem[] = [
             {
                 title: 'Role',
                 href: '/roles',
-            },
-            {
-                title: 'User',
-                href: '/users',
             },
         ],
     },

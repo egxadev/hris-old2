@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Branch;
 use App\Models\Region;
 use Illuminate\Http\Request;
-use App\Services\BranchService;
+use App\Services\Admin\BranchService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BranchRequest;
 
@@ -26,13 +26,13 @@ class BranchController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Branch',
-                'href' => route('branches.index')
+                'href' => route('admin.branches.index')
             ]
         ];
 
         $data = $this->branchService->getPaginatedBranches($request->all());
 
-        return inertia('branches/index', array_merge(
+        return inertia('admin/branches/index', array_merge(
             ['breadcrumbs' => $breadcrumbs],
             $data
         ));
@@ -46,15 +46,15 @@ class BranchController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Branch',
-                'href' => route('branches.index')
+                'href' => route('admin.branches.index')
             ],
             [
                 'title' => 'Create',
-                'href' => route('branches.create')
+                'href' => route('admin.branches.create')
             ]
         ];
 
-        return inertia('branches/create', [
+        return inertia('admin/branches/create', [
             'breadcrumbs' => $breadcrumbs,
             'regions' => Region::all(),
         ]);
@@ -68,9 +68,9 @@ class BranchController extends Controller
         $response = $this->branchService->createBranch($request->validated());
 
         if ($response['success']) {
-            return redirect()->route('regions.index')->with('success', $response['message']);
+            return redirect()->route('admin.branches.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('regions.index')->with('error', $response['message']);
+            return redirect()->route('admin.branches.index')->with('error', $response['message']);
         }
     }
 
@@ -82,17 +82,17 @@ class BranchController extends Controller
         $breadcrumbs = [
             [
                 'title' => 'Branch',
-                'href' => route('branches.index')
+                'href' => route('admin.branches.index')
             ],
             [
                 'title' => 'Edit',
-                'href' => route('branches.edit', $id)
+                'href' => route('admin.branches.edit', $id)
             ]
         ];
 
         $branch = $this->branchService->getBranchById($id);
 
-        return inertia('branches/edit', [
+        return inertia('admin/branches/edit', [
             'breadcrumbs' => $breadcrumbs,
             'regions'     => Region::all(),
             'branch'      => $branch['data'],
@@ -107,9 +107,9 @@ class BranchController extends Controller
         $response = $this->branchService->updateBranch($branch, $request->validated());
 
         if ($response['success']) {
-            return redirect()->route('branches.index')->with('success', $response['message']);
+            return redirect()->route('admin.branches.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('branches.index')->with('error', $response['message']);
+            return redirect()->route('admin.branches.index')->with('error', $response['message']);
         }
     }
 
@@ -121,9 +121,9 @@ class BranchController extends Controller
         $response = $this->branchService->deleteBranch($id);
 
         if ($response['success']) {
-            return redirect()->route('branches.index')->with('success', $response['message']);
+            return redirect()->route('admin.branches.index')->with('success', $response['message']);
         } else {
-            return redirect()->route('branches.index')->with('error', $response['message']);
+            return redirect()->route('admin.branches.index')->with('error', $response['message']);
         }
     }
 }

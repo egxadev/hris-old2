@@ -19,6 +19,9 @@ class BranchRequest extends FormRequest
                 'name'     => 'required',
                 'code'     => 'required|unique:branches',
                 'address'  => 'required',
+                'latitude' => 'nullable|numeric|between:-90,90',
+                'longitude' => 'nullable|numeric|between:-180,180',
+                'geofence_radius' => 'nullable|integer|min:10|max:1000',
             ];
         }
 
@@ -30,6 +33,9 @@ class BranchRequest extends FormRequest
                 'name'     => 'required',
                 'code'     => 'required|unique:branches,code,' . $branch->id,
                 'address'  => 'required',
+                'latitude' => 'nullable|numeric|between:-90,90',
+                'longitude' => 'nullable|numeric|between:-180,180',
+                'geofence_radius' => 'nullable|integer|min:10|max:1000',
             ];
         }
     }

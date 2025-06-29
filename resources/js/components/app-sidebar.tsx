@@ -20,6 +20,7 @@ export function AppSidebar() {
                                 </div>
                                 <div className="ml-1 grid flex-1 text-left text-sm">
                                     <span className="mb-0.5 truncate leading-none font-semibold">{appName}</span>
+                                    <span className="text-xs text-muted-foreground">Kementerian Perhubungan</span>
                                 </div>
                             </Link>
                         </SidebarMenuButton>

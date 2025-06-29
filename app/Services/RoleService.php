@@ -59,6 +59,19 @@ class RoleService
     }
 
     /**
+     * Get role by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function getRoleById(string $id): array
+    {
+        $role = Role::with('permissions')->findOrFail($id);
+
+        return $this->successResponse($role, 'Role fetched successfully.');
+    }
+
+    /**
      * Create a new role and assign permissions.
      *
      * @param array $data

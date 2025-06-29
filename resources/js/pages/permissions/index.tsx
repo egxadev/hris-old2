@@ -101,7 +101,7 @@ export default function PermissionIndex() {
     }, []);
 
     const table = useReactTable({
-        data: data,
+        data,
         columns,
         manualPagination: true,
         manualSorting: true,

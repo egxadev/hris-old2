@@ -51,7 +51,7 @@ const ActionCell = ({ data }: { data: Role }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     function handleDelete() {
-        router.delete(`roles/${data.id}`, {
+        router.delete(route('roles.destroy', data.id), {
             preserveState: false,
             preserveScroll: true,
             onSuccess: () => {

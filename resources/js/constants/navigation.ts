@@ -1,5 +1,5 @@
 import { NavItem } from '@/types';
-import { CalendarCheck, CalendarSync, LayoutGrid, Settings, UsersRound } from 'lucide-react';
+import { CalendarCheck, CalendarSync, FileText, LayoutGrid, Settings, UsersRound } from 'lucide-react';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -74,6 +74,18 @@ export const mainNavItems: NavItem[] = [
                 title: 'Attendance',
                 href: '/admin/attendances',
             },
+        ],
+    },
+    {
+        title: 'Report',
+        href: '#',
+        icon: FileText,
+        permission: ['admin.reports.attendance'],
+        items: [
+            {
+                title: 'Attendance',
+                href: '/admin/reports/attendance',
+            }
         ],
     },
     {

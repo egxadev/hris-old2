@@ -75,6 +75,16 @@ export const columns: ColumnDef<Attendance>[] = [
         },
     },
     {
+        accessorKey: 'worked_minutes',
+        header: ({ column }) => {
+            return (
+                <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+                    Worked Minutes
+                </Button>
+            );
+        },
+    },
+    {
         id: 'actions',
         cell: ({ row }) => {
             const data = row.original;

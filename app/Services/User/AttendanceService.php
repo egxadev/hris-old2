@@ -291,7 +291,7 @@ class AttendanceService
      */
     private function handleCheckOut(Employee $employee, string $date, array $data, bool $isNightShift): array
     {
-        Log::info("Processing check-out request for date: {$date}");
+        Log::info("Processing check-out request for date: {$date}, isNightShift: " . ($isNightShift ? 'true' : 'false'));
         
         // Find the attendance record to check out from
         $attendanceToCheckOut = $this->findAttendanceForCheckOut($employee->id, $date, $isNightShift);
@@ -326,15 +326,65 @@ class AttendanceService
         $attendanceToCheckOut->updated_by = auth()->id();
         
         // Calculate worked minutes
-        $checkInTime = Carbon::parse($attendanceToCheckOut->date . ' ' . $attendanceToCheckOut->check_in_time);
-        $checkOutTime = Carbon::parse($date . ' ' . $data['check_out_time']);
+        $checkInDate = $attendanceToCheckOut->date;
+        $checkOutDate = $date;
         
-        // If check-out is earlier than check-in, assume it's the next day
-        if ($checkOutTime->lt($checkInTime)) {
-            $checkOutTime->addDay();
+        $checkInTime = Carbon::parse($checkInDate . ' ' . $attendanceToCheckOut->check_in_time);
+        $checkOutTime = Carbon::parse($checkOutDate . ' ' . $data['check_out_time']);
+        
+        Log::info("Initial check-in time: " . $checkInTime->toDateTimeString());
+        Log::info("Initial check-out time: " . $checkOutTime->toDateTimeString());
+        
+        // Handle night shift scenarios
+        if ($isNightShift) {
+            // Case 1: Check-in is from previous day (e.g., check-in at 22:00, check-out at 06:00 next day)
+            if ($checkInDate < $checkOutDate) {
+                // This is normal for night shift, no adjustment needed
+                Log::info("Night shift spanning multiple days: check-in from previous day");
+            } 
+            // Case 2: Same day check-in and check-out, but check-out time is earlier (e.g., check-in at 22:00, check-out at 06:00 same day)
+            else if ($checkOutTime->lt($checkInTime)) {
+                // Add a day to check-out time to represent next day
+                $checkOutTime->addDay();
+                Log::info("Night shift adjustment: Added 1 day to check-out time: " . $checkOutTime->toDateTimeString());
+            }
+        } 
+        // Regular shift but check-out appears earlier than check-in (likely data error)
+        else if ($checkOutTime->lt($checkInTime)) {
+            // If check-out time is earlier than check-in time on the same day
+            // This is likely a data entry error or unusual situation
+            
+            // If the difference is very large (e.g., check-in at 22:00, check-out at 06:00)
+            // it might be a night shift that wasn't properly marked
+            if ($checkInTime->diffInHours($checkOutTime) > 12) {
+                $checkOutTime->addDay();
+                Log::info("Possible unmarked night shift detected. Added 1 day to check-out time: " . $checkOutTime->toDateTimeString());
+            } else {
+                // Small time difference might be a data entry error, but we'll still calculate correctly
+                Log::warning("Check-out time is earlier than check-in time on same day. Possible data error.");
+            }
         }
         
-        $attendanceToCheckOut->worked_minutes = $checkOutTime->diffInMinutes($checkInTime);
+        // Calculate the difference in minutes
+        $workedMinutes = $checkInTime->diffInMinutes($checkOutTime);
+        
+        Log::info("Final check-in time: " . $checkInTime->toDateTimeString());
+        Log::info("Final check-out time: " . $checkOutTime->toDateTimeString());
+        Log::info("Calculated worked minutes: " . $workedMinutes);
+        
+        // Ensure we always have a positive value for worked_minutes
+        if ($workedMinutes < 0) {
+            Log::warning("Negative worked minutes detected: {$workedMinutes}, converting to absolute value");
+            $workedMinutes = abs($workedMinutes);
+        }
+        
+        // Apply reasonable limits to catch potential calculation errors
+        // For example, if worked minutes is more than 24 hours, it might be an error
+        if ($workedMinutes > 24 * 60) {
+            Log::warning("Unusually high worked minutes: {$workedMinutes} (over 24 hours). Check for calculation errors.");
+        }
+        
+        $attendanceToCheckOut->worked_minutes = $workedMinutes;
         $attendanceToCheckOut->save();
         
         return $this->successResponse($attendanceToCheckOut, 'Check-out recorded successfully.');

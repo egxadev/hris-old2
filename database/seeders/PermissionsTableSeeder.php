@@ -12,89 +12,94 @@ class PermissionsTableSeeder extends Seeder
      */
     public function run(): void
     {
+        // Helper function to create permission only if it doesn't exist
+        $createPermission = function($name) {
+            if (!Permission::where('name', $name)->where('guard_name', 'web')->exists()) {
+                Permission::create(['name' => $name, 'guard_name' => 'web']);
+            }
+        };
+
         //permission dashboard
-        Permission::create(['name' => 'dashboard.index', 'guard_name' => 'web']);
-        Permission::create(['name' => 'dashboard.statistics', 'guard_name' => 'web']);
-        Permission::create(['name' => 'dashboard.chart', 'guard_name' => 'web']);
+        $createPermission('dashboard.index');
+        $createPermission('dashboard.statistics');
+        $createPermission('dashboard.chart');
 
         //permission roles
-        Permission::create(['name' => 'roles.index', 'guard_name' => 'web']);
-        Permission::create(['name' => 'roles.create', 'guard_name' => 'web']);
-        Permission::create(['name' => 'roles.edit', 'guard_name' => 'web']);
-        Permission::create(['name' => 'roles.delete', 'guard_name' => 'web']);
+        $createPermission('roles.index');
+        $createPermission('roles.create');
+        $createPermission('roles.edit');
+        $createPermission('roles.delete');
 
         //permission permissions
-        Permission::create(['name' => 'permissions.index', 'guard_name' => 'web']);
+        $createPermission('permissions.index');
 
         //permission users
-        Permission::create(['name' => 'users.index', 'guard_name' => 'web']);
-        Permission::create(['name' => 'users.create', 'guard_name' => 'web']);
-        Permission::create(['name' => 'users.edit', 'guard_name' => 'web']);
-        Permission::create(['name' => 'users.delete', 'guard_name' => 'web']);
-
-
-
-
-
+        $createPermission('users.index');
+        $createPermission('users.create');
+        $createPermission('users.edit');
+        $createPermission('users.delete');
 
         // ADMIN PERMISSIONS
-
         //permission regions
-        Permission::create(['name' => 'admin.regions.index', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.regions.create', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.regions.edit', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.regions.delete', 'guard_name' => 'web']);
+        $createPermission('admin.regions.index');
+        $createPermission('admin.regions.create');
+        $createPermission('admin.regions.edit');
+        $createPermission('admin.regions.delete');
 
         //permission branches
-        Permission::create(['name' => 'admin.branches.index', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.branches.create', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.branches.edit', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.branches.delete', 'guard_name' => 'web']);
+        $createPermission('admin.branches.index');
+        $createPermission('admin.branches.create');
+        $createPermission('admin.branches.edit');
+        $createPermission('admin.branches.delete');
 
         //permission departments
-        Permission::create(['name' => 'admin.departments.index', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.departments.create', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.departments.edit', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.departments.delete', 'guard_name' => 'web']);
+        $createPermission('admin.departments.index');
+        $createPermission('admin.departments.create');
+        $createPermission('admin.departments.edit');
+        $createPermission('admin.departments.delete');
 
         //permission positions
-        Permission::create(['name' => 'admin.positions.index', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.positions.create', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.positions.edit', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.positions.delete', 'guard_name' => 'web']);
+        $createPermission('admin.positions.index');
+        $createPermission('admin.positions.create');
+        $createPermission('admin.positions.edit');
+        $createPermission('admin.positions.delete');
 
         //permission employees
-        Permission::create(['name' => 'admin.employees.index', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.employees.create', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.employees.edit', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.employees.delete', 'guard_name' => 'web']);
+        $createPermission('admin.employees.index');
+        $createPermission('admin.employees.create');
+        $createPermission('admin.employees.edit');
+        $createPermission('admin.employees.delete');
 
         //permission shifts
-        Permission::create(['name' => 'admin.shifts.index', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.shifts.create', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.shifts.edit', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.shifts.delete', 'guard_name' => 'web']);
+        $createPermission('admin.shifts.index');
+        $createPermission('admin.shifts.create');
+        $createPermission('admin.shifts.edit');
+        $createPermission('admin.shifts.delete');
 
         //permission schedules
-        Permission::create(['name' => 'admin.schedules.index', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.schedules.create', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.schedules.edit', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.schedules.delete', 'guard_name' => 'web']);
+        $createPermission('admin.schedules.index');
+        $createPermission('admin.schedules.create');
+        $createPermission('admin.schedules.edit');
+        $createPermission('admin.schedules.delete');
 
         //permission attendances
-        Permission::create(['name' => 'admin.attendances.index', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.attendances.create', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.attendances.edit', 'guard_name' => 'web']);
-        Permission::create(['name' => 'admin.attendances.delete', 'guard_name' => 'web']);
+        $createPermission('admin.attendances.index');
+        $createPermission('admin.attendances.create');
+        $createPermission('admin.attendances.edit');
+        $createPermission('admin.attendances.delete');
+
+        //permission reports
+        $createPermission('admin.reports.attendance');
+        $createPermission('admin.reports.attendance.export');
 
         // USER PERMISSIONS
         //permission checkin attendance
-        Permission::create(['name' => 'user.attendances.checkin', 'guard_name' => 'web']);
+        $createPermission('user.attendances.checkin');
 
         //permission checkout attendance
-        Permission::create(['name' => 'user.attendances.checkout', 'guard_name' => 'web']);
+        $createPermission('user.attendances.checkout');
 
         //permission history attendance
-        Permission::create(['name' => 'user.attendances.history', 'guard_name' => 'web']);
+        $createPermission('user.attendances.history');
     }
 }

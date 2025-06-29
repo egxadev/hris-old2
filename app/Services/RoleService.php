@@ -66,7 +66,8 @@ class RoleService
      */
     public function getRoleById(string $id): array
     {
-        $role = Role::findOrFail($id);
+        $role = Role::with('permissions')->findOrFail($id);
+
         return $this->successResponse($role, 'Role fetched successfully.');
     }
 

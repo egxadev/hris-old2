@@ -7,6 +7,7 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\Admin\ShiftController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\RegionController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\PositionController;
 use App\Http\Controllers\Admin\ScheduleController;
@@ -66,6 +67,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // attendance
         Route::resource('/attendances', AttendanceController::class)
             ->middleware('permission:admin.attendances.index|admin.attendances.create|admin.attendances.edit|admin.attendances.delete');
+
+        // reports
+        Route::get('/reports/attendance', [ReportController::class, 'attendanceIndex'])
+            ->middleware('permission:admin.reports.attendance')
+            ->name('reports.attendance');
+            
+        Route::post('/reports/attendance/data', [ReportController::class, 'attendanceReport'])
+            ->middleware('permission:admin.reports.attendance')
+            ->name('reports.attendance.data');
+            
+        Route::post('/reports/attendance/export-pdf', [ReportController::class, 'exportAttendancePdf'])
+            ->middleware('permission:admin.reports.attendance|admin.reports.attendance.export')
+            ->name('reports.attendance.export-pdf');
     });
 
     // Employee routes with user prefix

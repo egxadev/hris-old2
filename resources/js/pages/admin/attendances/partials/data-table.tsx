@@ -199,7 +199,7 @@ const ActionCell = ({ data, isTrashed = false }: { data: Attendance; isTrashed?:
                             </Link>
                         )}
 
-                        {hasAnyPermission(['admin.regions.delete']) && (
+                        {hasAnyPermission(['admin.attendances.delete']) && (
                             <AlertDialog>
                                 <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
                                     Delete
@@ -207,7 +207,9 @@ const ActionCell = ({ data, isTrashed = false }: { data: Attendance; isTrashed?:
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
                                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                        <AlertDialogDescription>This will move the region to trash. You can restore it later.</AlertDialogDescription>
+                                        <AlertDialogDescription>
+                                            This will move the attendance to trash. You can restore it later.
+                                        </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -219,15 +221,15 @@ const ActionCell = ({ data, isTrashed = false }: { data: Attendance; isTrashed?:
                     </>
                 ) : (
                     <>
-                        {hasAnyPermission(['admin.regions.delete']) && (
+                        {hasAnyPermission(['admin.attendances.delete']) && (
                             <AlertDialog>
                                 <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
                                     Restore
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
-                                        <AlertDialogTitle>Restore Region</AlertDialogTitle>
-                                        <AlertDialogDescription>This will restore the region and make it available again.</AlertDialogDescription>
+                                        <AlertDialogTitle>Restore Attendance</AlertDialogTitle>
+                                        <AlertDialogDescription>This will restore the attendance and make it available again.</AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -237,16 +239,16 @@ const ActionCell = ({ data, isTrashed = false }: { data: Attendance; isTrashed?:
                             </AlertDialog>
                         )}
 
-                        {hasAnyPermission(['admin.regions.delete']) && (
+                        {hasAnyPermission(['admin.attendances.delete']) && (
                             <AlertDialog>
                                 <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-800">
                                     Permanently Delete
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
-                                        <AlertDialogTitle>Permanently Delete Region</AlertDialogTitle>
+                                        <AlertDialogTitle>Permanently Delete Attendance</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            This action cannot be undone. This will permanently delete the region from our servers.
+                                            This action cannot be undone. This will permanently delete the attendance from our servers.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>

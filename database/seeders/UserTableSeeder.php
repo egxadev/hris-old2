@@ -21,8 +21,11 @@ class UserTableSeeder extends Seeder
             'password'  => bcrypt('password'),
         ]);
 
-        //get all permissions
-        $permissions = Permission::all();
+        $permissions = Permission::whereNotIn('name', function ($query) {
+            $query->select('name')
+                ->from('permissions')
+                ->where('name', 'like', 'users.%');
+        })->get();
 
         //get role admin
         $role = Role::where('name', 'admin')->first();

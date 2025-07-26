@@ -347,6 +347,11 @@ class EmployeeService
             $employee = Employee::findOrFail($id);
 
             DB::transaction(function () use ($employee) {
+                if ($employee->user) {
+                    $employee->user->update(['deleted_by' => auth()->id()]);
+                    $employee->user->delete();
+                }
+
                 $employee->update(['deleted_by' => auth()->id()]);
                 $employee->delete();
             });
@@ -372,6 +377,14 @@ class EmployeeService
             $employee = Employee::onlyTrashed()->findOrFail($id);
 
             \DB::transaction(function () use ($employee) {
+                if ($employee->user_id) {
+                    $user = \App\Models\User::onlyTrashed()->find($employee->user_id);
+                    if ($user) {
+                        $user->restore();
+                        $user->update(['deleted_by' => null]);
+                    }
+                }
+
                 $employee->restore();
                 $employee->update(['deleted_by' => null]);
             });
@@ -397,6 +410,10 @@ class EmployeeService
             $employee = Employee::onlyTrashed()->findOrFail($id);
 
             \DB::transaction(function () use ($employee) {
+                if ($employee->user) {
+                    $employee->user->forceDelete();
+                }
+
                 $employee->forceDelete();
             });
 

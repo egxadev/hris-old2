@@ -1,15 +1,7 @@
+import { DataTablePagination } from '@/components/data-table-pagination';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
-} from '@/components/ui/pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -147,12 +139,11 @@ export default function RoleIndex() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={breadcrumbs[0].title} />
 
-            <div className="w-full px-4">
-                {/* Responsive filter & action bar */}
+            <div className="w-full px-2 sm:px-4">
                 <div className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:gap-4">
                     <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
                         <Input
-                            placeholder="Filter names..."
+                            placeholder="Search..."
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                             className="max-w-full sm:max-w-sm"
@@ -189,15 +180,14 @@ export default function RoleIndex() {
                     </div>
                 </div>
 
-                {/* Responsive table container */}
                 <div className="overflow-x-auto rounded-md border">
-                    <Table className="min-w-[600px] text-sm sm:text-base">
+                    <Table className="text-sm sm:text-base">
                         <TableHeader>
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => {
                                         return (
-                                            <TableHead key={header.id} className="px-2 py-2 text-xs whitespace-nowrap sm:text-sm">
+                                            <TableHead key={header.id} className="px-2 py-2 text-center text-xs whitespace-nowrap sm:text-sm">
                                                 {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                                             </TableHead>
                                         );
@@ -227,89 +217,7 @@ export default function RoleIndex() {
                     </Table>
                 </div>
 
-                {/* Responsive pagination */}
-                <div className="flex flex-col items-center justify-between gap-2 py-4 sm:flex-row">
-                    <div className="text-xs text-muted-foreground sm:text-sm">
-                        Showing {meta.from} to {meta.to} of {meta.total} entries.
-                    </div>
-                    <div className="w-full sm:w-auto">
-                        <Pagination>
-                            <PaginationContent>
-                                <PaginationItem>
-                                    <PaginationPrevious
-                                        href="#"
-                                        onClick={() => {
-                                            if (meta.current_page > 1) {
-                                                handleServerOperation({ page: meta.current_page - 1 });
-                                            }
-                                        }}
-                                        className={meta.current_page > 1 ? '' : 'cursor-default opacity-50'}
-                                    />
-                                </PaginationItem>
-                                {meta.last_page > 5 ? (
-                                    <>
-                                        <PaginationItem>
-                                            <PaginationLink
-                                                href="#"
-                                                isActive={meta.current_page === 1}
-                                                onClick={() => handleServerOperation({ page: 1 })}
-                                            >
-                                                1
-                                            </PaginationLink>
-                                        </PaginationItem>
-                                        {meta.current_page > 3 && <PaginationEllipsis />}
-                                        {[meta.current_page - 1, meta.current_page, meta.current_page + 1]
-                                            .filter((page) => page > 1 && page < meta.last_page)
-                                            .map((page) => (
-                                                <PaginationItem key={page}>
-                                                    <PaginationLink
-                                                        href="#"
-                                                        isActive={meta.current_page === page}
-                                                        onClick={() => handleServerOperation({ page })}
-                                                    >
-                                                        {page}
-                                                    </PaginationLink>
-                                                </PaginationItem>
-                                            ))}
-                                        {meta.current_page < meta.last_page - 2 && <PaginationEllipsis />}
-                                        <PaginationItem>
-                                            <PaginationLink
-                                                href="#"
-                                                isActive={meta.current_page === meta.last_page}
-                                                onClick={() => handleServerOperation({ page: meta.last_page })}
-                                            >
-                                                {meta.last_page}
-                                            </PaginationLink>
-                                        </PaginationItem>
-                                    </>
-                                ) : (
-                                    Array.from({ length: meta.last_page }, (_, i) => i + 1).map((page) => (
-                                        <PaginationItem key={page}>
-                                            <PaginationLink
-                                                href="#"
-                                                isActive={meta.current_page === page}
-                                                onClick={() => handleServerOperation({ page })}
-                                            >
-                                                {page}
-                                            </PaginationLink>
-                                        </PaginationItem>
-                                    ))
-                                )}
-                                <PaginationItem>
-                                    <PaginationNext
-                                        href="#"
-                                        onClick={() => {
-                                            if (meta.current_page < meta.last_page) {
-                                                handleServerOperation({ page: meta.current_page + 1 });
-                                            }
-                                        }}
-                                        className={meta.current_page < meta.last_page ? '' : 'cursor-default opacity-50'}
-                                    />
-                                </PaginationItem>
-                            </PaginationContent>
-                        </Pagination>
-                    </div>
-                </div>
+                <DataTablePagination meta={meta} onPageChange={(page) => handleServerOperation({ page })} />
             </div>
         </AppLayout>
     );

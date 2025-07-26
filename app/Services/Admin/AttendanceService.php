@@ -30,11 +30,13 @@ class AttendanceService
         $sortDir = in_array($dir = strtolower($filters['sort_dir'] ?? self::DEFAULT_SORT_DIR), ['asc', 'desc']) ? $dir : self::DEFAULT_SORT_DIR;
 
         $search = trim($filters['search'] ?? '');
+        $trashed = filter_var($filters['trashed'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-        $query = Attendance::query()
-            ->with(['employee' => function($query) {
-                $query->with('user:id,name');
-            }]);
+        $query = $trashed ? Attendance::onlyTrashed() : Attendance::query();
+
+        $query->with(['employee' => function ($query) {
+            $query->with('user:id,name');
+        }]);
 
         $query->when($search, function ($query) use ($search) {
             $query->where(function ($subQuery) use ($search) {
@@ -59,6 +61,7 @@ class AttendanceService
             'search'        => $search,
             'sort_by'       => $sortBy,
             'sort_dir'      => $sortDir,
+            'trashed'       => $trashed,
         ]);
     }
 
@@ -165,6 +168,54 @@ class AttendanceService
         }
     }
 
+    /**
+     * Restore attendance by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function restoreAttendance(string $id): array
+    {
+        try {
+            $attendance = Attendance::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($attendance) {
+                $attendance->restore();
+                $attendance->update(['deleted_by' => null]);
+            });
+
+            return $this->successResponse(null, 'Attendance restored successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Attendance not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to restore attendance: ' . $e->getMessage());
+            return $this->errorResponse('Failed to restore attendance.');
+        }
+    }
+
+    /**
+     * Force delete attendance by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function forceDeleteAttendance(string $id): array
+    {
+        try {
+            $attendance = Attendance::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($attendance) {
+                $attendance->forceDelete();
+            });
+
+            return $this->successResponse(null, 'Attendance permanently deleted successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Attendance not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to force delete attendance: ' . $e->getMessage());
+            return $this->errorResponse('Failed to permanently delete attendance.');
+        }
+    }
 
     /**
      * Get all employees for dropdown.
@@ -184,7 +235,7 @@ class AttendanceService
                     'name' => $employee->user->name
                 ];
             });
-            
+
         return $this->successResponse($employees, 'Employees retrieved successfully.');
     }
 }

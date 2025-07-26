@@ -126,4 +126,32 @@ class BranchController extends Controller
             return redirect()->route('admin.branches.index')->with('error', $response['message']);
         }
     }
+
+    /**
+     * Restore the specified resource from storage.
+     */
+    public function restore(string $id)
+    {
+        $response = $this->branchService->restoreBranch($id);
+
+        if ($response['success']) {
+            return redirect()->route('admin.branches.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('admin.branches.index')->with('error', $response['message']);
+        }
+    }
+
+    /**
+     * Force delete the specified resource from storage.
+     */
+    public function forceDelete(string $id)
+    {
+        $response = $this->branchService->forceDeleteBranch($id);
+
+        if ($response['success']) {
+            return redirect()->route('admin.branches.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('admin.branches.index')->with('error', $response['message']);
+        }
+    }
 }

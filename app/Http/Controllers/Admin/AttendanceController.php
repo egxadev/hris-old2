@@ -129,4 +129,32 @@ class AttendanceController extends Controller
             return redirect()->route('admin.attendances.index')->with('error', $response['message']);
         }
     }
+
+    /**
+     * Restore the specified resource from storage.
+     */
+    public function restore(string $id)
+    {
+        $response = $this->attendanceService->restoreAttendance($id);
+
+        if ($response['success']) {
+            return redirect()->route('admin.attendances.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('admin.attendances.index')->with('error', $response['message']);
+        }
+    }
+
+    /**
+     * Force delete the specified resource from storage.
+     */
+    public function forceDelete(string $id)
+    {
+        $response = $this->attendanceService->forceDeleteAttendance($id);
+
+        if ($response['success']) {
+            return redirect()->route('admin.attendances.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('admin.attendances.index')->with('error', $response['message']);
+        }
+    }
 }

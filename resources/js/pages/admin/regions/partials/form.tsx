@@ -8,11 +8,10 @@ import { router, usePage } from '@inertiajs/react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-const formSchema = z
-    .object({
-        name: z.string().min(2, { message: 'Region name must be at least 2 characters.' }),
-        code: z.string().min(2, { message: 'Region code must be at least 2 characters.' }),
-    })
+const formSchema = z.object({
+    name: z.string().min(2, { message: 'Region name must be at least 2 characters.' }),
+    code: z.string().min(2, { message: 'Region code must be at least 2 characters.' }),
+});
 
 export function RegionForm({
     mode,
@@ -61,7 +60,6 @@ export function RegionForm({
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className={`${className} space-y-8`}>
-
                 <FormField
                     control={form.control}
                     name="code"

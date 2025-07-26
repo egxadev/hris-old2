@@ -29,8 +29,9 @@ class PositionService
         $sortDir = in_array($dir = strtolower($filters['sort_dir'] ?? self::DEFAULT_SORT_DIR), ['asc', 'desc']) ? $dir : self::DEFAULT_SORT_DIR;
 
         $search = trim($filters['search'] ?? '');
+        $trashed = filter_var($filters['trashed'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-        $query = Position::query();
+        $query = $trashed ? Position::onlyTrashed() : Position::query();
 
         $query->when($search, function ($query) use ($search) {
             $query->where(function ($subQuery) use ($search) {
@@ -55,6 +56,7 @@ class PositionService
             'search'        => $search,
             'sort_by'       => $sortBy,
             'sort_dir'      => $sortDir,
+            'trashed'       => $trashed,
         ]);
     }
 
@@ -148,6 +150,55 @@ class PositionService
         } catch (\Exception $e) {
             \Log::error('Failed to delete position: ' . $e->getMessage());
             return $this->errorResponse('Failed to delete position.');
+        }
+    }
+
+    /**
+     * Restore position by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function restorePosition(string $id): array
+    {
+        try {
+            $position = Position::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($position) {
+                $position->restore();
+                $position->update(['deleted_by' => null]);
+            });
+
+            return $this->successResponse(null, 'Position restored successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Position not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to restore position: ' . $e->getMessage());
+            return $this->errorResponse('Failed to restore position.');
+        }
+    }
+
+    /**
+     * Force delete position by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function forceDeletePosition(string $id): array
+    {
+        try {
+            $position = Position::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($position) {
+                $position->forceDelete();
+            });
+
+            return $this->successResponse(null, 'Position permanently deleted successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Position not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to force delete position: ' . $e->getMessage());
+            return $this->errorResponse('Failed to permanently delete position.');
         }
     }
 }

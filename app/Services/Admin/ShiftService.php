@@ -29,8 +29,9 @@ class ShiftService
         $sortDir = in_array($dir = strtolower($filters['sort_dir'] ?? self::DEFAULT_SORT_DIR), ['asc', 'desc']) ? $dir : self::DEFAULT_SORT_DIR;
 
         $search = trim($filters['search'] ?? '');
+        $trashed = filter_var($filters['trashed'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-        $query = Shift::query();
+        $query = $trashed ? Shift::onlyTrashed() : Shift::query();
 
         $query->when($search, function ($query) use ($search) {
             $query->where(function ($subQuery) use ($search) {
@@ -55,6 +56,7 @@ class ShiftService
             'search'        => $search,
             'sort_by'       => $sortBy,
             'sort_dir'      => $sortDir,
+            'trashed'       => $trashed,
         ]);
     }
 
@@ -154,6 +156,56 @@ class ShiftService
         } catch (\Exception $e) {
             \Log::error('Failed to delete shift: ' . $e->getMessage());
             return $this->errorResponse('Failed to delete shift.');
+        }
+    }
+
+
+    /**
+     * Restore shift by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function restoreShift(string $id): array
+    {
+        try {
+            $shift = Shift::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($shift) {
+                $shift->restore();
+                $shift->update(['deleted_by' => null]);
+            });
+
+            return $this->successResponse(null, 'Shift restored successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Shift not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to restore shift: ' . $e->getMessage());
+            return $this->errorResponse('Failed to restore shift.');
+        }
+    }
+
+    /**
+     * Force delete shift by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function forceDeleteShift(string $id): array
+    {
+        try {
+            $shift = Shift::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($shift) {
+                $shift->forceDelete();
+            });
+
+            return $this->successResponse(null, 'Shift permanently deleted successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Shift not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to force delete shift: ' . $e->getMessage());
+            return $this->errorResponse('Failed to permanently delete shift.');
         }
     }
 }

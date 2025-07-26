@@ -123,4 +123,32 @@ class DepartmentController extends Controller
             return redirect()->route('admin.departments.index')->with('error', $response['message']);
         }
     }
+
+    /**
+     * Restore the specified resource from storage.
+     */
+    public function restore(string $id)
+    {
+        $response = $this->departmentService->restoreDepartment($id);
+
+        if ($response['success']) {
+            return redirect()->route('admin.departments.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('admin.departments.index')->with('error', $response['message']);
+        }
+    }
+
+    /**
+     * Force delete the specified resource from storage.
+     */
+    public function forceDelete(string $id)
+    {
+        $response = $this->departmentService->forceDeleteDepartment($id);
+
+        if ($response['success']) {
+            return redirect()->route('admin.departments.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('admin.departments.index')->with('error', $response['message']);
+        }
+    }
 }

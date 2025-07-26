@@ -29,8 +29,9 @@ class RegionService
         $sortDir = in_array($dir = strtolower($filters['sort_dir'] ?? self::DEFAULT_SORT_DIR), ['asc', 'desc']) ? $dir : self::DEFAULT_SORT_DIR;
 
         $search = trim($filters['search'] ?? '');
+        $trashed = filter_var($filters['trashed'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-        $query = Region::query();
+        $query = $trashed ? Region::onlyTrashed() : Region::query();
 
         $query->when($search, function ($query) use ($search) {
             $query->where(function ($subQuery) use ($search) {
@@ -55,6 +56,7 @@ class RegionService
             'search'        => $search,
             'sort_by'       => $sortBy,
             'sort_dir'      => $sortDir,
+            'trashed'       => $trashed,
         ]);
     }
 
@@ -146,6 +148,55 @@ class RegionService
         } catch (\Exception $e) {
             \Log::error('Failed to delete region: ' . $e->getMessage());
             return $this->errorResponse('Failed to delete region.');
+        }
+    }
+
+    /**
+     * Restore region by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function restoreRegion(string $id): array
+    {
+        try {
+            $region = Region::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($region) {
+                $region->restore();
+                $region->update(['deleted_by' => null]);
+            });
+
+            return $this->successResponse(null, 'Region restored successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Region not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to restore region: ' . $e->getMessage());
+            return $this->errorResponse('Failed to restore region.');
+        }
+    }
+
+    /**
+     * Force delete region by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function forceDeleteRegion(string $id): array
+    {
+        try {
+            $region = Region::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($region) {
+                $region->forceDelete();
+            });
+
+            return $this->successResponse(null, 'Region permanently deleted successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Region not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to force delete region: ' . $e->getMessage());
+            return $this->errorResponse('Failed to permanently delete region.');
         }
     }
 }

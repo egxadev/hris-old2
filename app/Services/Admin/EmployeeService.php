@@ -31,8 +31,11 @@ class EmployeeService
         $sortDir = in_array($dir = strtolower($filters['sort_dir'] ?? self::DEFAULT_SORT_DIR), ['asc', 'desc']) ? $dir : self::DEFAULT_SORT_DIR;
 
         $search = trim($filters['search'] ?? '');
+        $trashed = filter_var($filters['trashed'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-        $query = Employee::with(['user', 'branch', 'department', 'position']);
+        $query = $trashed ? Employee::onlyTrashed() : Employee::query();
+
+        $query->with(['user', 'branch', 'department', 'position']);
 
         $query->when($search, function ($query) use ($search) {
             $query->where(function ($subQuery) use ($search) {
@@ -61,6 +64,7 @@ class EmployeeService
             'search'        => $search,
             'sort_by'       => $sortBy,
             'sort_dir'      => $sortDir,
+            'trashed'       => $trashed,
         ]);
     }
 
@@ -107,14 +111,14 @@ class EmployeeService
                         'password'      => bcrypt($data['user']['password']),
                         'created_by'    => auth()->id(),
                     ]);
-                    
+
                     if (isset($data['user']['roles']) && is_array($data['user']['roles'])) {
                         $user->assignRole($data['user']['roles']);
                     }
-                    
+
                     $userId = $user->id;
                 }
-                
+
                 // Create employee
                 $employee = Employee::create([
                     'user_id'       => $userId,
@@ -124,7 +128,7 @@ class EmployeeService
                     'position_id'    => $data['position_id'],
                     'employee_code'  => $data['employee_code'],
                     'employee_type'  => $data['employee_type'],
-                    'employee_status'=> $data['employee_status'] ?? 1,
+                    'employee_status' => $data['employee_status'] ?? 1,
                     'joined_at'      => $data['joined_at'],
                     'resigned_at'    => $data['resigned_at'] ?? null,
                     'nik'           => $data['nik'],
@@ -169,7 +173,7 @@ class EmployeeService
                     'position_id'    => $data['position_id'],
                     'employee_code'  => $data['employee_code'],
                     'employee_type'  => $data['employee_type'],
-                    'employee_status'=> $data['employee_status'] ?? 1,
+                    'employee_status' => $data['employee_status'] ?? 1,
                     'joined_at'      => $data['joined_at'],
                     'resigned_at'    => $data['resigned_at'] ?? null,
                     'nik'           => $data['nik'],
@@ -218,13 +222,13 @@ class EmployeeService
                             'email'         => $data['user']['email'],
                             'updated_by'    => auth()->id(),
                         ];
-                        
+
                         if (!empty($data['user']['password'])) {
                             $userData['password'] = bcrypt($data['user']['password']);
                         }
-                        
+
                         $user->update($userData);
-                        
+
                         if (isset($data['user']['roles']) && is_array($data['user']['roles'])) {
                             $user->syncRoles($data['user']['roles']);
                         }
@@ -236,15 +240,15 @@ class EmployeeService
                             'password'      => bcrypt($data['user']['password']),
                             'created_by'    => auth()->id(),
                         ]);
-                        
+
                         if (isset($data['user']['roles']) && is_array($data['user']['roles'])) {
                             $user->assignRole($data['user']['roles']);
                         }
-                        
+
                         $employee->user_id = $user->id;
                     }
                 }
-                
+
                 // Update employee
                 $employee->update([
                     'region_id'      => $data['region_id'],
@@ -253,7 +257,7 @@ class EmployeeService
                     'position_id'    => $data['position_id'],
                     'employee_code'  => $data['employee_code'],
                     'employee_type'  => $data['employee_type'],
-                    'employee_status'=> $data['employee_status'] ?? 1,
+                    'employee_status' => $data['employee_status'] ?? 1,
                     'joined_at'      => $data['joined_at'],
                     'resigned_at'    => $data['resigned_at'] ?? null,
                     'nik'           => $data['nik'],
@@ -270,7 +274,7 @@ class EmployeeService
                     'education'     => $data['education'],
                     'updated_by'    => auth()->id(),
                 ]);
-                
+
                 return $employee;
             });
 
@@ -301,7 +305,7 @@ class EmployeeService
                     'position_id'    => $data['position_id'],
                     'employee_code'  => $data['employee_code'],
                     'employee_type'  => $data['employee_type'],
-                    'employee_status'=> $data['employee_status'] ?? 1,
+                    'employee_status' => $data['employee_status'] ?? 1,
                     'joined_at'      => $data['joined_at'],
                     'resigned_at'    => $data['resigned_at'] ?? null,
                     'nik'           => $data['nik'],
@@ -318,7 +322,7 @@ class EmployeeService
                     'education'     => $data['education'],
                     'updated_by'    => auth()->id(),
                 ]);
-                
+
                 return $employee;
             });
 
@@ -353,6 +357,55 @@ class EmployeeService
         } catch (\Exception $e) {
             \Log::error('Failed to delete employee: ' . $e->getMessage());
             return $this->errorResponse('Failed to delete employee.');
+        }
+    }
+
+    /**
+     * Restore employee by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function restoreEmployee(string $id): array
+    {
+        try {
+            $employee = Employee::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($employee) {
+                $employee->restore();
+                $employee->update(['deleted_by' => null]);
+            });
+
+            return $this->successResponse(null, 'Employee restored successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Employee not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to restore employee: ' . $e->getMessage());
+            return $this->errorResponse('Failed to restore employee.');
+        }
+    }
+
+    /**
+     * Force delete employee by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function forceDeleteEmployee(string $id): array
+    {
+        try {
+            $employee = Employee::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($employee) {
+                $employee->forceDelete();
+            });
+
+            return $this->successResponse(null, 'Employee permanently deleted successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Employee not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to force delete employee: ' . $e->getMessage());
+            return $this->errorResponse('Failed to permanently delete employee.');
         }
     }
 }

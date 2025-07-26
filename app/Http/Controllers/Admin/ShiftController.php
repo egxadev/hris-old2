@@ -123,4 +123,32 @@ class ShiftController extends Controller
             return redirect()->route('admin.shifts.index')->with('error', $response['message']);
         }
     }
+
+    /**
+     * Restore the specified resource from storage.
+     */
+    public function restore(string $id)
+    {
+        $response = $this->shiftService->restoreShift($id);
+
+        if ($response['success']) {
+            return redirect()->route('admin.shifts.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('admin.shifts.index')->with('error', $response['message']);
+        }
+    }
+
+    /**
+     * Force delete the specified resource from storage.
+     */
+    public function forceDelete(string $id)
+    {
+        $response = $this->shiftService->forceDeleteShift($id);
+
+        if ($response['success']) {
+            return redirect()->route('admin.shifts.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('admin.shifts.index')->with('error', $response['message']);
+        }
+    }
 }

@@ -29,8 +29,9 @@ class BranchService
         $sortDir = in_array($dir = strtolower($filters['sort_dir'] ?? self::DEFAULT_SORT_DIR), ['asc', 'desc']) ? $dir : self::DEFAULT_SORT_DIR;
 
         $search = trim($filters['search'] ?? '');
+        $trashed = filter_var($filters['trashed'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-        $query = Branch::query();
+        $query = $trashed ? Branch::onlyTrashed() : Branch::query();
 
         $query->when($search, function ($query) use ($search) {
             $query->where(function ($subQuery) use ($search) {
@@ -55,6 +56,7 @@ class BranchService
             'search'        => $search,
             'sort_by'       => $sortBy,
             'sort_dir'      => $sortDir,
+            'trashed'       => $trashed,
         ]);
     }
 
@@ -156,6 +158,55 @@ class BranchService
         } catch (\Exception $e) {
             \Log::error('Failed to delete branch: ' . $e->getMessage());
             return $this->errorResponse('Failed to delete branch.');
+        }
+    }
+
+    /**
+     * Restore branch by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function restoreBranch(string $id): array
+    {
+        try {
+            $branch = Branch::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($branch) {
+                $branch->restore();
+                $branch->update(['deleted_by' => null]);
+            });
+
+            return $this->successResponse(null, 'Branch restored successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Branch not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to restore branch: ' . $e->getMessage());
+            return $this->errorResponse('Failed to restore branch.');
+        }
+    }
+
+    /**
+     * Force delete branch by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function forceDeleteBranch(string $id): array
+    {
+        try {
+            $branch = Branch::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($branch) {
+                $branch->forceDelete();
+            });
+
+            return $this->successResponse(null, 'Branch permanently deleted successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Branch not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to force delete branch: ' . $e->getMessage());
+            return $this->errorResponse('Failed to permanently delete branch.');
         }
     }
 }

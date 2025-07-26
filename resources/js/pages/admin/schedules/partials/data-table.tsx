@@ -22,9 +22,9 @@ import hasAnyPermission from '@/lib/utils';
 import { Schedule } from '@/types/schedule';
 import { Link, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
+import { format } from 'date-fns';
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
-import { format } from 'date-fns';
 
 export const columns: ColumnDef<Schedule>[] = [
     {
@@ -74,15 +74,16 @@ export const columns: ColumnDef<Schedule>[] = [
     },
     {
         id: 'actions',
-        cell: ({ row }) => {
+        cell: ({ row, table }) => {
             const data = row.original;
+            const isTrashed = (table.options.meta as { isTrashed?: boolean })?.isTrashed || false;
 
-            return <ActionCell data={data} />;
+            return <ActionCell data={data} isTrashed={isTrashed} />;
         },
     },
 ];
 
-const ActionCell = ({ data }: { data: Schedule }) => {
+const ActionCell = ({ data, isTrashed = false }: { data: Schedule; isTrashed?: boolean }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     function handleDelete() {
@@ -100,6 +101,40 @@ const ActionCell = ({ data }: { data: Schedule }) => {
         });
     }
 
+    function handleRestore() {
+        router.patch(
+            route('admin.schedules.restore', data.id),
+            {},
+            {
+                preserveState: false,
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsDropdownOpen(false);
+                    console.log('Schedule restored successfully.');
+                },
+                onError: () => {
+                    setIsDropdownOpen(false);
+                    console.error('Failed to restore schedule.');
+                },
+            },
+        );
+    }
+
+    function handleForceDelete() {
+        router.delete(route('admin.schedules.force-delete', data.id), {
+            preserveState: false,
+            preserveScroll: true,
+            onSuccess: () => {
+                setIsDropdownOpen(false);
+                console.log('Schedule permanently deleted successfully.');
+            },
+            onError: () => {
+                setIsDropdownOpen(false);
+                console.error('Failed to permanently delete schedule.');
+            },
+        });
+    }
+
     return (
         <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
@@ -112,30 +147,76 @@ const ActionCell = ({ data }: { data: Schedule }) => {
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
 
-                {hasAnyPermission(['admin.schedules.edit']) && (
-                    <Link href={route('admin.schedules.edit', data.id)}>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                    </Link>
-                )}
+                {!isTrashed ? (
+                    <>
+                        {hasAnyPermission(['admin.schedules.edit']) && (
+                            <Link href={route('admin.schedules.edit', data.id)}>
+                                <DropdownMenuItem>Edit</DropdownMenuItem>
+                            </Link>
+                        )}
 
-                {hasAnyPermission(['admin.schedules.delete']) && (
-                    <AlertDialog>
-                        <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
-                            Delete
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete your data from our servers.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete()}>Continue</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                        {hasAnyPermission(['admin.schedules.delete']) && (
+                            <AlertDialog>
+                                <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                                    Delete
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This will move the schedule to trash. You can restore it later.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete()}>Continue</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        {hasAnyPermission(['admin.schedules.delete']) && (
+                            <AlertDialog>
+                                <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                                    Restore
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Restore Schedule</AlertDialogTitle>
+                                        <AlertDialogDescription>This will restore the schedule and make it available again.</AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleRestore()}>Restore</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+
+                        {hasAnyPermission(['admin.schedules.delete']) && (
+                            <AlertDialog>
+                                <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                                    Permanently Delete
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Permanently Delete Schedule</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete the schedule from our servers.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleForceDelete()} className="bg-red-600 hover:bg-red-700">
+                                            Permanently Delete
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+                    </>
                 )}
             </DropdownMenuContent>
         </DropdownMenu>

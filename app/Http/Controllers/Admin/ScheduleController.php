@@ -132,4 +132,32 @@ class ScheduleController extends Controller
             return redirect()->route('admin.schedules.index')->with('error', $response['message']);
         }
     }
+
+    /**
+     * Restore the specified resource from storage.
+     */
+    public function restore(string $id)
+    {
+        $response = $this->scheduleService->restoreSchedule($id);
+
+        if ($response['success']) {
+            return redirect()->route('admin.schedules.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('admin.schedules.index')->with('error', $response['message']);
+        }
+    }
+
+    /**
+     * Force delete the specified resource from storage.
+     */
+    public function forceDelete(string $id)
+    {
+        $response = $this->scheduleService->forceDeleteSchedule($id);
+
+        if ($response['success']) {
+            return redirect()->route('admin.schedules.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('admin.schedules.index')->with('error', $response['message']);
+        }
+    }
 }

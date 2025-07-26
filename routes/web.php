@@ -16,7 +16,7 @@ use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\User\AttendanceController as UserAttendanceController;
 
 Route::get('/', function () {
-    return inertia('welcome');
+    return redirect()->route('login');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {

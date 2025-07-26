@@ -16,7 +16,7 @@ use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\User\AttendanceController as UserAttendanceController;
 
 Route::get('/', function () {
-    return inertia('welcome');
+    return redirect()->route('login');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -72,11 +72,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/reports/attendance', [ReportController::class, 'attendanceIndex'])
             ->middleware('permission:admin.reports.attendance')
             ->name('reports.attendance');
-            
+
         Route::post('/reports/attendance/data', [ReportController::class, 'attendanceReport'])
             ->middleware('permission:admin.reports.attendance')
             ->name('reports.attendance.data');
-            
+
         Route::post('/reports/attendance/export-pdf', [ReportController::class, 'exportAttendancePdf'])
             ->middleware('permission:admin.reports.attendance|admin.reports.attendance.export')
             ->name('reports.attendance.export-pdf');
@@ -95,7 +95,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/attendances/checkout', [UserAttendanceController::class, 'checkout'])
             ->name('attendances.checkout')
             ->middleware('permission:user.attendances.checkout');
-            
+
         Route::post('/attendances/checkout', [UserAttendanceController::class, 'storeCheckout'])
             ->name('attendances.store.checkout')
             ->middleware('permission:user.attendances.checkout');

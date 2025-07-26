@@ -29,8 +29,9 @@ class DepartmentService
         $sortDir = in_array($dir = strtolower($filters['sort_dir'] ?? self::DEFAULT_SORT_DIR), ['asc', 'desc']) ? $dir : self::DEFAULT_SORT_DIR;
 
         $search = trim($filters['search'] ?? '');
+        $trashed = filter_var($filters['trashed'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-        $query = Department::query();
+        $query = $trashed ? Department::onlyTrashed() : Department::query();
 
         $query->when($search, function ($query) use ($search) {
             $query->where(function ($subQuery) use ($search) {
@@ -55,6 +56,7 @@ class DepartmentService
             'search'        => $search,
             'sort_by'       => $sortBy,
             'sort_dir'      => $sortDir,
+            'trashed'       => $trashed,
         ]);
     }
 
@@ -146,6 +148,56 @@ class DepartmentService
         } catch (\Exception $e) {
             \Log::error('Failed to delete department: ' . $e->getMessage());
             return $this->errorResponse('Failed to delete department.');
+        }
+    }
+
+
+    /**
+     * Restore department by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function restoreDepartment(string $id): array
+    {
+        try {
+            $department = Department::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($department) {
+                $department->restore();
+                $department->update(['deleted_by' => null]);
+            });
+
+            return $this->successResponse(null, 'Department restored successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Department not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to restore department: ' . $e->getMessage());
+            return $this->errorResponse('Failed to restore department.');
+        }
+    }
+
+    /**
+     * Force delete department by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function forceDeleteDepartment(string $id): array
+    {
+        try {
+            $department = Department::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($department) {
+                $department->forceDelete();
+            });
+
+            return $this->successResponse(null, 'Department permanently deleted successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Department not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to force delete department: ' . $e->getMessage());
+            return $this->errorResponse('Failed to permanently delete department.');
         }
     }
 }

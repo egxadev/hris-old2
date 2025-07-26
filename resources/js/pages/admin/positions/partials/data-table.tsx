@@ -51,15 +51,16 @@ export const columns: ColumnDef<Position>[] = [
     },
     {
         id: 'actions',
-        cell: ({ row }) => {
+        cell: ({ row, table }) => {
             const data = row.original;
+            const isTrashed = (table.options.meta as { isTrashed?: boolean })?.isTrashed || false;
 
-            return <ActionCell data={data} />;
+            return <ActionCell data={data} isTrashed={isTrashed} />;
         },
     },
 ];
 
-const ActionCell = ({ data }: { data: Position }) => {
+const ActionCell = ({ data, isTrashed = false }: { data: Position; isTrashed?: boolean }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     function handleDelete() {
@@ -77,6 +78,40 @@ const ActionCell = ({ data }: { data: Position }) => {
         });
     }
 
+    function handleRestore() {
+        router.patch(
+            route('admin.positions.restore', data.id),
+            {},
+            {
+                preserveState: false,
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsDropdownOpen(false);
+                    console.log('Position restored successfully.');
+                },
+                onError: () => {
+                    setIsDropdownOpen(false);
+                    console.error('Failed to restore position.');
+                },
+            },
+        );
+    }
+
+    function handleForceDelete() {
+        router.delete(route('admin.positions.force-delete', data.id), {
+            preserveState: false,
+            preserveScroll: true,
+            onSuccess: () => {
+                setIsDropdownOpen(false);
+                console.log('Position permanently deleted successfully.');
+            },
+            onError: () => {
+                setIsDropdownOpen(false);
+                console.error('Failed to permanently delete position.');
+            },
+        });
+    }
+
     return (
         <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
@@ -89,30 +124,76 @@ const ActionCell = ({ data }: { data: Position }) => {
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
 
-                {hasAnyPermission(['admin.positions.edit']) && (
-                    <Link href={route('admin.positions.edit', data.id)}>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                    </Link>
-                )}
+                {!isTrashed ? (
+                    <>
+                        {hasAnyPermission(['admin.positions.edit']) && (
+                            <Link href={route('admin.positions.edit', data.id)}>
+                                <DropdownMenuItem>Edit</DropdownMenuItem>
+                            </Link>
+                        )}
 
-                {hasAnyPermission(['admin.positions.delete']) && (
-                    <AlertDialog>
-                        <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
-                            Delete
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete your data from our servers.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete()}>Continue</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                        {hasAnyPermission(['admin.positions.delete']) && (
+                            <AlertDialog>
+                                <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                                    Delete
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This will move the position to trash. You can restore it later.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete()}>Continue</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        {hasAnyPermission(['admin.positions.delete']) && (
+                            <AlertDialog>
+                                <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                                    Restore
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Restore Position</AlertDialogTitle>
+                                        <AlertDialogDescription>This will restore the position and make it available again.</AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleRestore()}>Restore</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+
+                        {hasAnyPermission(['admin.positions.delete']) && (
+                            <AlertDialog>
+                                <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                                    Permanently Delete
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Permanently Delete Position</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete the position from our servers.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleForceDelete()} className="bg-red-600 hover:bg-red-700">
+                                            Permanently Delete
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+                    </>
                 )}
             </DropdownMenuContent>
         </DropdownMenu>

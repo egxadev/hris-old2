@@ -46,6 +46,7 @@ export default function EmployeeIndex() {
             search: string;
             sort_by: string;
             sort_dir: string;
+            trashed: boolean;
         };
         flash: {
             success: string;
@@ -56,6 +57,7 @@ export default function EmployeeIndex() {
     }>().props;
     const [search, setSearch] = React.useState(filters.search);
     const [sorting, setSorting] = React.useState<SortingState>([{ id: filters.sort_by, desc: filters.sort_dir === 'desc' }]);
+    const [trashed, setTrashed] = React.useState(filters.trashed || false);
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
     const [rowSelection, setRowSelection] = React.useState({});
     const [isInitialRender, setIsInitialRender] = React.useState(true);
@@ -102,7 +104,14 @@ export default function EmployeeIndex() {
     }, [sorting]);
 
     // Handle server-side operations
-    const handleServerOperation = (params: { page?: number; per_page?: number; sort_by?: string; sort_dir?: string; search?: string }) => {
+    const handleServerOperation = (params: {
+        page?: number;
+        per_page?: number;
+        sort_by?: string;
+        sort_dir?: string;
+        search?: string;
+        trashed?: boolean;
+    }) => {
         router.get(
             route('admin.employees.index'),
             {
@@ -116,6 +125,13 @@ export default function EmployeeIndex() {
                 replace: true,
             },
         );
+    };
+
+    // Handle trashed toggle
+    const handleTrashedToggle = () => {
+        const newTrashed = !trashed;
+        setTrashed(newTrashed);
+        handleServerOperation({ trashed: newTrashed, page: 1 });
     };
 
     const table = useReactTable({
@@ -132,6 +148,9 @@ export default function EmployeeIndex() {
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
+        meta: {
+            isTrashed: trashed,
+        },
         state: {
             sorting,
             pagination: {
@@ -148,17 +167,20 @@ export default function EmployeeIndex() {
             <Head title={breadcrumbs[0].title} />
 
             <div className="w-full px-4">
-                <div className="flex items-center py-4">
-                    <Input
-                        placeholder="Filter names..."
-                        value={search}
-                        onChange={(event) => setSearch(event.target.value)}
-                        className="mr-1 max-w-sm"
-                    />
-                    <div className="ml-auto flex flex-row gap-1">
+                {/* Responsive filter & action bar */}
+                <div className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:gap-4">
+                    <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
+                        <Input
+                            placeholder="Filter names..."
+                            value={search}
+                            onChange={(event) => setSearch(event.target.value)}
+                            className="max-w-full sm:max-w-sm"
+                        />
+                    </div>
+                    <div className="flex w-full flex-row gap-1 sm:w-auto">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="ml-auto">
+                                <Button variant="outline" className="w-full sm:w-auto">
                                     Columns <ChevronDown />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -180,21 +202,24 @@ export default function EmployeeIndex() {
                                     })}
                             </DropdownMenuContent>
                         </DropdownMenu>
-
-                        <Link className="" href={route('admin.employees.create')}>
-                            <Button>Add Employee</Button>
+                        <Button variant="outline" onClick={handleTrashedToggle} className="sm:ml-2">
+                            {trashed ? 'Show Active' : 'Show Trashed'}
+                        </Button>
+                        <Link className="w-full sm:w-auto" href={route('admin.employees.create')}>
+                            <Button className="w-full sm:w-auto">Add Employee</Button>
                         </Link>
                     </div>
                 </div>
 
-                <div className="rounded-md border">
-                    <Table>
+                {/* Responsive table container */}
+                <div className="overflow-x-auto rounded-md border">
+                    <Table className="min-w-[600px] text-sm sm:text-base">
                         <TableHeader>
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => {
                                         return (
-                                            <TableHead key={header.id}>
+                                            <TableHead key={header.id} className="px-2 py-2 text-xs whitespace-nowrap sm:text-sm">
                                                 {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                                             </TableHead>
                                         );
@@ -207,7 +232,9 @@ export default function EmployeeIndex() {
                                 table.getRowModel().rows.map((row) => (
                                     <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                                         {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                                            <TableCell key={cell.id} className="px-2 py-2 text-xs whitespace-nowrap sm:text-sm">
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </TableCell>
                                         ))}
                                     </TableRow>
                                 ))
@@ -222,11 +249,12 @@ export default function EmployeeIndex() {
                     </Table>
                 </div>
 
-                <div className="flex items-center justify-end space-x-2 py-4">
-                    <div className="text-muted-foreground flex-1 text-sm">
+                {/* Responsive pagination */}
+                <div className="flex flex-col items-center justify-between gap-2 py-4 sm:flex-row">
+                    <div className="text-xs text-muted-foreground sm:text-sm">
                         Showing {meta.from} to {meta.to} of {meta.total} entries.
                     </div>
-                    <div className="space-x-2">
+                    <div className="w-full sm:w-auto">
                         <Pagination>
                             <PaginationContent>
                                 <PaginationItem>

@@ -73,15 +73,16 @@ export const columns: ColumnDef<Shift>[] = [
     },
     {
         id: 'actions',
-        cell: ({ row }) => {
+        cell: ({ row, table }) => {
             const data = row.original;
+            const isTrashed = (table.options.meta as { isTrashed?: boolean })?.isTrashed || false;
 
-            return <ActionCell data={data} />;
+            return <ActionCell data={data} isTrashed={isTrashed} />;
         },
     },
 ];
 
-const ActionCell = ({ data }: { data: Shift }) => {
+const ActionCell = ({ data, isTrashed = false }: { data: Shift; isTrashed?: boolean }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     function handleDelete() {
@@ -99,6 +100,40 @@ const ActionCell = ({ data }: { data: Shift }) => {
         });
     }
 
+    function handleRestore() {
+        router.patch(
+            route('admin.shifts.restore', data.id),
+            {},
+            {
+                preserveState: false,
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsDropdownOpen(false);
+                    console.log('Shift restored successfully.');
+                },
+                onError: () => {
+                    setIsDropdownOpen(false);
+                    console.error('Failed to restore shift.');
+                },
+            },
+        );
+    }
+
+    function handleForceDelete() {
+        router.delete(route('admin.shifts.force-delete', data.id), {
+            preserveState: false,
+            preserveScroll: true,
+            onSuccess: () => {
+                setIsDropdownOpen(false);
+                console.log('Shift permanently deleted successfully.');
+            },
+            onError: () => {
+                setIsDropdownOpen(false);
+                console.error('Failed to permanently delete shift.');
+            },
+        });
+    }
+
     return (
         <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
@@ -111,30 +146,74 @@ const ActionCell = ({ data }: { data: Shift }) => {
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
 
-                {hasAnyPermission(['admin.shifts.edit']) && (
-                    <Link href={route('admin.shifts.edit', data.id)}>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                    </Link>
-                )}
+                {!isTrashed ? (
+                    <>
+                        {hasAnyPermission(['admin.shifts.edit']) && (
+                            <Link href={route('admin.shifts.edit', data.id)}>
+                                <DropdownMenuItem>Edit</DropdownMenuItem>
+                            </Link>
+                        )}
 
-                {hasAnyPermission(['admin.shifts.delete']) && (
-                    <AlertDialog>
-                        <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
-                            Delete
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete your data from our servers.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete()}>Continue</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                        {hasAnyPermission(['admin.shifts.delete']) && (
+                            <AlertDialog>
+                                <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                                    Delete
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>This will move the shift to trash. You can restore it later.</AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete()}>Continue</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        {hasAnyPermission(['admin.shifts.delete']) && (
+                            <AlertDialog>
+                                <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                                    Restore
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Restore Shift</AlertDialogTitle>
+                                        <AlertDialogDescription>This will restore the shift and make it available again.</AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleRestore()}>Restore</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+
+                        {hasAnyPermission(['admin.shifts.delete']) && (
+                            <AlertDialog>
+                                <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                                    Permanently Delete
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Permanently Delete Shift</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete the shift from our servers.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleForceDelete()} className="bg-red-600 hover:bg-red-700">
+                                            Permanently Delete
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+                    </>
                 )}
             </DropdownMenuContent>
         </DropdownMenu>

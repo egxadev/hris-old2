@@ -79,20 +79,22 @@ export const columns: ColumnDef<Branch>[] = [
             const latitude = row.original.latitude;
             const longitude = row.original.longitude;
             const radius = row.original.geofence_radius || 100;
-            
+
             if (latitude === null || longitude === null) {
                 return <div className="text-gray-400">Not set</div>;
             }
-            
+
             return (
                 <div>
-                    <div>{latitude}, {longitude}</div>
+                    <div>
+                        {latitude}, {longitude}
+                    </div>
                     <div className="text-xs text-gray-500">Radius: {radius}m</div>
-                    <a 
-                        href={`https://maps.google.com/?q=${latitude},${longitude}`} 
-                        target="_blank" 
+                    <a
+                        href={`https://maps.google.com/?q=${latitude},${longitude}`}
+                        target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline text-xs"
+                        className="text-xs text-blue-500 hover:underline"
                     >
                         View on map
                     </a>
@@ -102,15 +104,16 @@ export const columns: ColumnDef<Branch>[] = [
     },
     {
         id: 'actions',
-        cell: ({ row }) => {
+        cell: ({ row, table }) => {
             const data = row.original;
+            const isTrashed = (table.options.meta as { isTrashed?: boolean })?.isTrashed || false;
 
-            return <ActionCell data={data} />;
+            return <ActionCell data={data} isTrashed={isTrashed} />;
         },
     },
 ];
 
-const ActionCell = ({ data }: { data: Branch }) => {
+const ActionCell = ({ data, isTrashed = false }: { data: Branch; isTrashed?: boolean }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     function handleDelete() {
@@ -128,6 +131,40 @@ const ActionCell = ({ data }: { data: Branch }) => {
         });
     }
 
+    function handleRestore() {
+        router.patch(
+            route('admin.branches.restore', data.id),
+            {},
+            {
+                preserveState: false,
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsDropdownOpen(false);
+                    console.log('Branch restored successfully.');
+                },
+                onError: () => {
+                    setIsDropdownOpen(false);
+                    console.error('Failed to restore branch.');
+                },
+            },
+        );
+    }
+
+    function handleForceDelete() {
+        router.delete(route('admin.branches.force-delete', data.id), {
+            preserveState: false,
+            preserveScroll: true,
+            onSuccess: () => {
+                setIsDropdownOpen(false);
+                console.log('Branch permanently deleted successfully.');
+            },
+            onError: () => {
+                setIsDropdownOpen(false);
+                console.error('Failed to permanently delete branch.');
+            },
+        });
+    }
+
     return (
         <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
@@ -140,30 +177,74 @@ const ActionCell = ({ data }: { data: Branch }) => {
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
 
-                {hasAnyPermission(['admin.branches.edit']) && (
-                    <Link href={route('admin.branches.edit', data.id)}>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                    </Link>
-                )}
+                {!isTrashed ? (
+                    <>
+                        {hasAnyPermission(['admin.branches.edit']) && (
+                            <Link href={route('admin.branches.edit', data.id)}>
+                                <DropdownMenuItem>Edit</DropdownMenuItem>
+                            </Link>
+                        )}
 
-                {hasAnyPermission(['admin.branches.delete']) && (
-                    <AlertDialog>
-                        <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
-                            Delete
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete your data from our servers.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete()}>Continue</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                        {hasAnyPermission(['admin.branches.delete']) && (
+                            <AlertDialog>
+                                <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                                    Delete
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>This will move the branch to trash. You can restore it later.</AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete()}>Continue</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        {hasAnyPermission(['admin.branches.delete']) && (
+                            <AlertDialog>
+                                <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                                    Restore
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Restore Branch</AlertDialogTitle>
+                                        <AlertDialogDescription>This will restore the branch and make it available again.</AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleRestore()}>Restore</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+
+                        {hasAnyPermission(['admin.branches.delete']) && (
+                            <AlertDialog>
+                                <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                                    Permanently Delete
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Permanently Delete Branch</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete the branch from our servers.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleForceDelete()} className="bg-red-600 hover:bg-red-700">
+                                            Permanently Delete
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+                    </>
                 )}
             </DropdownMenuContent>
         </DropdownMenu>

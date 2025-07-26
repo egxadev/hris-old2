@@ -31,10 +31,10 @@ class ScheduleService
         $sortDir = in_array($dir = strtolower($filters['sort_dir'] ?? self::DEFAULT_SORT_DIR), ['asc', 'desc']) ? $dir : self::DEFAULT_SORT_DIR;
 
         $search = trim($filters['search'] ?? '');
+        $trashed = filter_var($filters['trashed'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-        $query = Schedule::query();
-        
-        // Include relationships with nested user relationship
+        $query = $trashed ? Schedule::onlyTrashed() : Schedule::query();
+
         $query->with(['employee.user', 'shift']);
 
         $query->when($search, function ($query) use ($search) {
@@ -60,6 +60,7 @@ class ScheduleService
             'search'        => $search,
             'sort_by'       => $sortBy,
             'sort_dir'      => $sortDir,
+            'trashed'       => $trashed,
         ]);
     }
 
@@ -93,7 +94,7 @@ class ScheduleService
                     'name' => $employee->user->name
                 ];
             });
-            
+
         return $this->successResponse($employees, 'Employees retrieved successfully.');
     }
 
@@ -186,6 +187,55 @@ class ScheduleService
         } catch (\Exception $e) {
             \Log::error('Failed to delete schedule: ' . $e->getMessage());
             return $this->errorResponse('Failed to delete schedule.');
+        }
+    }
+
+    /**
+     * Restore schedule by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function restoreSchedule(string $id): array
+    {
+        try {
+            $schedule = Schedule::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($schedule) {
+                $schedule->restore();
+                $schedule->update(['deleted_by' => null]);
+            });
+
+            return $this->successResponse(null, 'Schedule restored successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Schedule not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to restore schedule: ' . $e->getMessage());
+            return $this->errorResponse('Failed to restore schedule.');
+        }
+    }
+
+    /**
+     * Force delete schedule by ID.
+     *
+     * @param string $id
+     * @return array
+     */
+    public function forceDeleteSchedule(string $id): array
+    {
+        try {
+            $schedule = Schedule::onlyTrashed()->findOrFail($id);
+
+            \DB::transaction(function () use ($schedule) {
+                $schedule->forceDelete();
+            });
+
+            return $this->successResponse(null, 'Schedule permanently deleted successfully.');
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse('Schedule not found.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to force delete schedule: ' . $e->getMessage());
+            return $this->errorResponse('Failed to permanently delete schedule.');
         }
     }
 }

@@ -126,4 +126,32 @@ class PositionController extends Controller
             return redirect()->route('admin.positions.index')->with('error', $response['message']);
         }
     }
+
+    /**
+     * Restore the specified resource from storage.
+     */
+    public function restore(string $id)
+    {
+        $response = $this->positionService->restorePosition($id);
+
+        if ($response['success']) {
+            return redirect()->route('admin.positions.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('admin.positions.index')->with('error', $response['message']);
+        }
+    }
+
+    /**
+     * Force delete the specified resource from storage.
+     */
+    public function forceDelete(string $id)
+    {
+        $response = $this->positionService->forceDeletePosition($id);
+
+        if ($response['success']) {
+            return redirect()->route('admin.positions.index')->with('success', $response['message']);
+        } else {
+            return redirect()->route('admin.positions.index')->with('error', $response['message']);
+        }
+    }
 }

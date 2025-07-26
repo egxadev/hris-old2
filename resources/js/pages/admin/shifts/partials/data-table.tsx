@@ -60,18 +60,6 @@ export const columns: ColumnDef<Shift>[] = [
         },
     },
     {
-        accessorKey: 'is_night_shift',
-        header: ({ column }) => {
-            return (
-                <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-                    Night Shift
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-            );
-        },
-        cell: ({ row }) => <div>{row.getValue('is_night_shift') ? 'Yes' : 'No'}</div>,
-    },
-    {
         id: 'actions',
         cell: ({ row, table }) => {
             const data = row.original;

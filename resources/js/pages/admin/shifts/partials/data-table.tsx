@@ -180,7 +180,7 @@ const ActionCell = ({ data, isTrashed = false }: { data: Shift; isTrashed?: bool
                             </AlertDialog>
                         )}
 
-                        {hasAnyPermission(['admin.shifts.delete']) && (
+                        {/* {hasAnyPermission(['admin.shifts.delete']) && (
                             <AlertDialog>
                                 <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-800">
                                     Permanently Delete
@@ -200,7 +200,7 @@ const ActionCell = ({ data, isTrashed = false }: { data: Shift; isTrashed?: bool
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
-                        )}
+                        )} */}
                     </>
                 )}
             </DropdownMenuContent>

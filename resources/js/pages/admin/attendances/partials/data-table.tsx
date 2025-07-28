@@ -69,11 +69,7 @@ export const columns: ColumnDef<Attendance>[] = [
         cell: ({ row }) => {
             const photo = row.original.check_in_photo;
             return photo ? (
-                <img 
-                    src={photo} 
-                    alt="Check-in Photo" 
-                    className="h-16 w-16 object-cover rounded-md" 
-                />
+                <img src={photo} alt="Check-in Photo" className="h-16 w-16 rounded-md object-cover" />
             ) : (
                 <span className="text-gray-400">No photo</span>
             );
@@ -96,11 +92,7 @@ export const columns: ColumnDef<Attendance>[] = [
         cell: ({ row }) => {
             const photo = row.original.check_out_photo;
             return photo ? (
-                <img 
-                    src={photo} 
-                    alt="Check-out Photo" 
-                    className="h-16 w-16 object-cover rounded-md" 
-                />
+                <img src={photo} alt="Check-out Photo" className="h-16 w-16 rounded-md object-cover" />
             ) : (
                 <span className="text-gray-400">No photo</span>
             );
@@ -239,7 +231,7 @@ const ActionCell = ({ data, isTrashed = false }: { data: Attendance; isTrashed?:
                             </AlertDialog>
                         )}
 
-                        {hasAnyPermission(['admin.attendances.delete']) && (
+                        {/* {hasAnyPermission(['admin.attendances.delete']) && (
                             <AlertDialog>
                                 <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-800">
                                     Permanently Delete
@@ -259,7 +251,7 @@ const ActionCell = ({ data, isTrashed = false }: { data: Attendance; isTrashed?:
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
-                        )}
+                        )} */}
                     </>
                 )}
             </DropdownMenuContent>

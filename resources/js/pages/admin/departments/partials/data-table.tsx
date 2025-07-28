@@ -172,7 +172,7 @@ const ActionCell = ({ data, isTrashed = false }: { data: Department; isTrashed?:
                             </AlertDialog>
                         )}
 
-                        {hasAnyPermission(['admin.departments.delete']) && (
+                        {/* {hasAnyPermission(['admin.departments.delete']) && (
                             <AlertDialog>
                                 <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-800">
                                     Permanently Delete
@@ -192,7 +192,7 @@ const ActionCell = ({ data, isTrashed = false }: { data: Department; isTrashed?:
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
-                        )}
+                        )} */}
                     </>
                 )}
             </DropdownMenuContent>

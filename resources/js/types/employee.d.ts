@@ -1,7 +1,8 @@
-import { User } from './user';
 import { Branch } from './branch';
 import { Department } from './department';
 import { Position } from './position';
+import { Schedule } from './schedule';
+import { User } from './user';
 
 export interface Employee {
     id: string;
@@ -34,4 +35,5 @@ export interface Employee {
     branch?: Branch;
     department?: Department;
     position?: Position;
+    schedules?: Schedule[];
 }

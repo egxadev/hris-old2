@@ -39,7 +39,12 @@ class ReportController extends Controller
         $startDate = $request->start_date;
         $endDate = $request->end_date;
 
-        $attendances = Attendance::with(['employee.user', 'employee.department', 'employee.position'])
+        $attendances = Attendance::with([
+            'employee.user',
+            'employee.department',
+            'employee.position',
+            'employee.schedules.shift'
+        ])
             ->whereBetween('date', [$startDate, $endDate])
             ->orderBy('date', 'asc')
             ->get();
@@ -60,7 +65,12 @@ class ReportController extends Controller
         $startDate = $request->start_date;
         $endDate = $request->end_date;
 
-        $attendances = Attendance::with(['employee.user', 'employee.department', 'employee.position'])
+        $attendances = Attendance::with([
+            'employee.user',
+            'employee.department',
+            'employee.position',
+            'employee.schedules.shift'
+        ])
             ->whereBetween('date', [$startDate, $endDate])
             ->orderBy('date', 'asc')
             ->get();

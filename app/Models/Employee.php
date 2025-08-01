@@ -107,4 +107,14 @@ class Employee extends Model
     {
         return $this->belongsTo(Position::class);
     }
+
+    /**
+     * Get the schedules associated with the employee.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function schedules()
+    {
+        return $this->hasMany(Schedule::class);
+    }
 }
